@@ -4,19 +4,6 @@ KDrama Recommendation System - Full Web Application
 Routes: Public, User (auth), Admin
 """
 import os, sys, time, threading, math
-import os
-import gdown
-
-# Download database dari Google Drive
-DB_PATH = 'data/kdrama.db'
-os.makedirs('data', exist_ok=True)
-
-if not os.path.exists(DB_PATH):
-    print("📥 Downloading database from Google Drive...")
-    FILE_ID = '19riM_z-4MaSVTocyShiuAY88iE3ii4Hb'
-    url = f'https://drive.google.com/uc?id={19riM_z-4MaSVTocyShiuAY88iE3ii4Hb}'
-    gdown.download(url, DB_PATH, quiet=False)
-    print("✅ Database downloaded!")
 from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, g)
