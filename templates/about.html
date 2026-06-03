@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Tentang Sistem{% endblock %}
+{% block page_title %}Tentang Sistem{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-gold">📖 Tentang</div>
+  <h1 class="hero-title">Sistem Rekomendasi Drama Korea</h1>
+  <p class="hero-desc"><strong>Analisis Perbandingan Kinerja Metode Collaborative Filtering dan Content-Based Filtering untuk Sistem Rekomendasi Drama Korea</strong> — Penelitian Skripsi, Teknik Informatika, Universitas Malikussaleh.</p>
+</div>
+
+<!-- RESEARCH CONTEXT -->
+<div class="card" style="margin-bottom:20px;border-left:3px solid var(--blush)">
+  <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">RUMUSAN MASALAH PENELITIAN</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    {% for q in [
+      ('1','Bagaimana menerapkan CF dan CBF untuk menghasilkan rekomendasi drama Korea berdasarkan data rating?'),
+      ('2','Bagaimana kinerja CF dan CBF berdasarkan metrik evaluasi RMSE dan MAE?'),
+      ('3','Apa perbedaan kinerja antara CF dan CBF berdasarkan berbagai metrik evaluasi?'),
+    ] %}
+    <div style="display:flex;gap:10px;font-size:12.5px">
+      <div style="width:20px;height:20px;border-radius:50%;background:var(--blush);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">{{ q[0] }}</div>
+      <div style="color:var(--muted);line-height:1.65">{{ q[1] }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- METRIK UTAMA -->
+<div style="margin-bottom:14px">
+  <div class="hero-badge badge-blush">📐 Metrik Evaluasi Utama</div>
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;margin-bottom:14px">RMSE & MAE</div>
+</div>
+<div class="two-col" style="margin-bottom:28px">
+  <div class="card" style="border-top:3px solid var(--blush)">
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--blush);margin-bottom:8px">RMSE</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:6px">Root Mean Square Error</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.75;margin-bottom:12px">Mengukur akar kuadrat dari rata-rata kuadrat selisih antara nilai prediksi dan rating aktual. RMSE memberikan <strong>penalti lebih besar</strong> untuk error yang besar.</p>
+    <div style="background:var(--soft);border-radius:9px;padding:12px;font-family:monospace;font-size:12px;color:var(--ink)">
+      RMSE = √( Σ(r<sub>ui</sub> - r̂<sub>ui</sub>)² / n )
+    </div>
+    <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">Interpretasi: <strong>Semakin rendah = Semakin akurat</strong>. Nilai 0 = prediksi sempurna.</div>
+  </div>
+  <div class="card" style="border-top:3px solid var(--gold-dark)">
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:800;color:var(--gold-dark);margin-bottom:8px">MAE</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:6px">Mean Absolute Error</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.75;margin-bottom:12px">Mengukur rata-rata selisih <strong>absolut</strong> antara prediksi dan nilai sebenarnya. MAE memberikan bobot yang <strong>sama rata</strong> untuk setiap kesalahan — lebih stabil terhadap outlier.</p>
+    <div style="background:var(--soft);border-radius:9px;padding:12px;font-family:monospace;font-size:12px;color:var(--ink)">
+      MAE = Σ|r<sub>ui</sub> - r̂<sub>ui</sub>| / n
+    </div>
+    <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">Interpretasi: <strong>Semakin rendah = Semakin akurat</strong>. Nilai 0 = prediksi sempurna.</div>
+  </div>
+</div>
+
+<!-- EVALUATION RESULTS -->
+{% if eval_results %}
+<div style="margin-bottom:14px">
+  <div class="hero-badge badge-green">📊 Hasil</div>
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;margin-bottom:14px">Hasil Evaluasi Terbaru</div>
+</div>
+
+<!-- RMSE & MAE COMPARISON - PROMINENT -->
+<div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(232,80,106,.03),rgba(212,168,67,.02))">
+  <div class="card-title">⭐ Perbandingan Metrik Utama: RMSE & MAE</div>
+  <div class="two-col" style="margin-bottom:16px">
+    {% for r in eval_results %}
+    <div style="background:var(--soft);border-radius:12px;padding:18px;border-top:3px solid {% if r.method=='CBF' %}var(--blush){% else %}var(--gold){% endif %}">
+      <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:14px">
+        {{ '🏷️' if r.method=='CBF' else '🤝' }} Metode {{ r.method }}
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1;text-align:center;background:var(--card);border-radius:10px;padding:14px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">RMSE</div>
+          <div style="font-family:'Nanum Myeongjo',serif;font-size:28px;font-weight:800;color:{% if r.method=='CBF' %}var(--blush){% else %}var(--gold-dark){% endif %}">
+            {{ "%.4f"|format(r.rmse) if r.rmse is not none else '—' }}
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">lebih rendah = lebih baik</div>
+        </div>
+        <div style="flex:1;text-align:center;background:var(--card);border-radius:10px;padding:14px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">MAE</div>
+          <div style="font-family:'Nanum Myeongjo',serif;font-size:28px;font-weight:800;color:{% if r.method=='CBF' %}var(--blush){% else %}var(--gold-dark){% endif %}">
+            {{ "%.4f"|format(r.mae) if r.mae is not none else '—' }}
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">lebih rendah = lebih baik</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- METRIK TAMBAHAN -->
+  <details style="margin-top:4px">
+    <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);padding:6px 0">▶ Lihat Metrik Tambahan (Precision, Recall, F1, NDCG)</summary>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+      {% for r in eval_results %}
+      {% for label, val in [('Precision@K', r.precision_k),('Recall@K', r.recall_k),('F1@K', r.f1_k),('NDCG', r.ndcg),('Coverage', r.coverage)] %}
+      {% if val is not none %}
+      <div style="background:var(--soft);border-radius:9px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:var(--muted)">{{ r.method }} {{ label }}</div>
+        <div style="font-size:13px;font-weight:700">{{ "%.4f"|format(val) }}</div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </details>
+</div>
+{% endif %}
+
+<!-- ALGORITMA -->
+<div class="two-col" style="margin-bottom:20px">
+  <div class="card">
+    <div style="font-size:22px;margin-bottom:10px">🏷️</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:800;margin-bottom:8px">CBF + Item Rating Augmentation</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:12px">CBF murni dengan augmentasi <strong>item rating metadata</strong> (kolom rating_y dari dataset). Tidak menggunakan data rating pengguna saat training — hanya atribut item. Prediksi menggunakan <strong>Weighted Sum</strong> yang sama dengan CF → perbandingan apple-to-apple.</p>
+    <div style="font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:5px">
+      <div><span class="tag tag-blush">Konten (70%)</span> Genre (×3), Cast (×2), Tags (×2), Synopsis, Director — TF-IDF</div>
+      <div><span class="tag tag-blush">Item Rating (30%)</span> rating_y dari dataset (atribut item, bukan dari user) — MinMaxScaler</div>
+      <div><span class="tag tag-blush">Prediksi</span> Weighted Sum — identik dengan CF → Apple-to-Apple, tetap Pure CBF</div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:22px;margin-bottom:10px">🤝</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:800;margin-bottom:8px">Item-Based CF</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:12px">Merekomendasikan berdasarkan pola rating pengguna menggunakan <strong>Item-Based CF</strong> dengan mean-centering dan prediksi Weighted Sum.</p>
+    <div style="font-size:11.5px;color:var(--muted);display:flex;flex-direction:column;gap:5px">
+      <div><span class="tag tag-gold">Input</span> Matriks User-Item dari data rating</div>
+      <div><span class="tag tag-gold">Similarity</span> Cosine Similarity antar kolom item</div>
+      <div><span class="tag tag-gold">Prediksi</span> Weighted Sum (Sarwar et al., 2001)</div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERPRETASI METRIK -->
+<div class="card">
+  <div class="card-title">📐 Panduan Interpretasi RMSE dan MAE</div>
+  <div class="info-box" style="margin-bottom:14px">
+    <span>ℹ</span>
+    <div>Prinsip utama: <strong>Lower is Better (lebih rendah = lebih baik)</strong>. Metode dengan nilai RMSE dan MAE lebih rendah dianggap lebih superior dalam memprediksi preferensi rating pengguna.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+    {% for item in [
+      ('Nilai mendekati 0', 'Prediksi hampir sempurna. Sistem berhasil memetakan preferensi pengguna dengan sangat akurat.', 'tag-green'),
+      ('RMSE vs MAE', 'RMSE lebih sensitif terhadap error besar (outlier). MAE lebih stabil dan intuitif untuk diinterpretasikan.', 'tag-blush'),
+      ('RMSE > MAE', 'Normal terjadi. Jika selisih RMSE dan MAE besar, berarti ada beberapa prediksi dengan error sangat besar.', 'tag-gold'),
+      ('Pemenang Evaluasi', 'Metode dengan RMSE DAN MAE lebih rendah dinyatakan sebagai metode yang lebih efektif untuk dataset ini.', 'tag-gray'),
+    ] %}
+    <div style="background:var(--soft);border-radius:10px;padding:12px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px"><span class="tag {{ item[2] }}">{{ item[0] }}</span></div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:6px">{{ item[1] }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

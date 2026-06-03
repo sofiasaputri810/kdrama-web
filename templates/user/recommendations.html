@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Rekomendasi Personal{% endblock %}
+{% block page_title %}Rekomendasi Personal{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-blush">✨ Personal</div>
+  <h1 class="hero-title">Rekomendasi untuk Anda</h1>
+  <p class="hero-desc">Drama yang direkomendasikan berdasarkan {{ rated_count }} drama yang sudah Anda rating.</p>
+</div>
+
+<!-- STATUS CF ELIGIBILITY -->
+{% if eligibility %}
+<div class="card" style="margin-bottom:22px;padding:16px 20px">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div style="flex:1;min-width:200px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">
+        Status Collaborative Filtering
+      </div>
+      <div style="font-size:13px;font-weight:600;color:{% if eligibility.eligible %}var(--green-dark){% else %}var(--ink){% endif %}">
+        {% if eligibility.eligible %}
+        ✓ {{ eligibility.message }}
+        {% else %}
+        {{ eligibility.message }}
+        {% endif %}
+      </div>
+    </div>
+    <div style="min-width:200px;flex:1">
+      <!-- Progress bar menuju 5 rating -->
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:4px">
+        <span>Progress rating</span>
+        <span>{{ eligibility.n_rated }} / {{ eligibility.min_required }}</span>
+      </div>
+      <div style="background:var(--soft);border-radius:20px;height:8px;overflow:hidden">
+        <div style="height:100%;border-radius:20px;width:{{ eligibility.progress_pct }}%;
+             background:{% if eligibility.eligible %}var(--green-dark){% else %}var(--blush){% endif %};
+             transition:width .6s ease"></div>
+      </div>
+      {% if not eligibility.eligible %}
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">
+        Beri rating {{ eligibility.needed }} drama lagi untuk membuka rekomendasi CF →
+        <a href="{{ url_for('dramas_list') }}" style="color:var(--blush)">Cari drama</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if not rated_count %}
+<div class="empty-state">
+  <div class="empty-icon">⭐</div>
+  <h3>Belum ada rating</h3>
+  <p>Beri rating minimal 1 drama untuk rekomendasi CBF, dan minimal <strong>5 drama</strong> untuk rekomendasi CF personal.</p>
+  <a href="{{ url_for('dramas_list') }}" class="btn btn-primary">Jelajahi Drama</a>
+</div>
+{% else %}
+
+<!-- METHOD TABS -->
+<div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap">
+  <a href="?method=cbf" class="btn {% if method=='cbf' %}btn-primary{% else %}btn-gray{% endif %} btn-sm">🏷️ Content-Based (CBF)</a>
+  <a href="?method=cf"  class="btn {% if method=='cf'  %}btn-gold{% else %}btn-gray{% endif %} btn-sm">
+    🤝 Collaborative (CF)
+    {% if not eligibility.eligible %}
+    <span style="font-size:10px;background:rgba(255,255,255,.25);border-radius:10px;padding:1px 5px">
+      {{ eligibility.n_rated }}/{{ eligibility.min_required }}
+    </span>
+    {% endif %}
+  </a>
+  <a href="?method=all" class="btn {% if method=='all' %}btn-green{% else %}btn-gray{% endif %} btn-sm">⚡ Keduanya</a>
+</div>
+
+{% if method in ('cbf','all') %}
+<!-- ── CBF RECOMMENDATIONS ─────────────────────────────────── -->
+<div style="margin-bottom:28px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div class="hero-badge badge-blush" style="margin:0">🏷️ CBF</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:17px;font-weight:700">Content-Based Filtering</div>
+    <div style="font-size:12px;color:var(--muted)">Berdasarkan konten drama yang Anda sukai</div>
+  </div>
+  {% if not cbf_ready %}
+  <div class="info-box"><span>⚠</span> Model CBF belum ditraining. Hubungi admin.</div>
+  {% elif not rated_count %}
+  <div class="info-box"><span>ℹ</span> Beri rating minimal 1 drama untuk rekomendasi CBF.</div>
+  {% elif recs_cbf %}
+  <div class="drama-grid">
+    {% for r in recs_cbf %}
+    <a href="{{ url_for('drama_detail', drama_id=r.drama_id) }}" class="drama-card">
+      <div class="drama-poster" style="background:linear-gradient(160deg,#2d1018,#1a1a2e)">
+        <span style="font-size:32px">🎭</span>
+        <div class="drama-poster-label">{{ r.title[:20] }}</div>
+        {% if r.similarity %}<div class="drama-rating-badge">{{ (r.similarity*100)|int }}%</div>{% endif %}
+      </div>
+      <div class="drama-body">
+        <div class="drama-title">{{ r.title[:28] }}{% if r.title|length > 28 %}…{% endif %}</div>
+        <div class="sim-bar"><div class="sim-fill" style="width:{{ (r.similarity*100)|int }}%"></div></div>
+        <div class="drama-meta">{{ (r.similarity*100)|int }}% cocok</div>
+        <div class="drama-tags">
+          {% for g in (r.genre or '').split(',')[:2] %}<span class="tag tag-blush" style="font-size:9px">{{ g.strip() }}</span>{% endfor %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="info-box"><span>ℹ</span> Tidak ada rekomendasi CBF saat ini.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if method in ('cf','all') %}
+<!-- ── CF RECOMMENDATIONS ──────────────────────────────────── -->
+<div style="margin-bottom:28px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div class="hero-badge badge-gold" style="margin:0">🤝 CF</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:17px;font-weight:700">Collaborative Filtering</div>
+    <div style="font-size:12px;color:var(--muted)">Berdasarkan pola rating pengguna serupa</div>
+  </div>
+
+  {% if not cf_ready %}
+  <div class="info-box"><span>⚠</span> Model CF belum ditraining. Hubungi admin.</div>
+
+  {% elif cf_error %}
+  <!-- Belum cukup rating -->
+  <div class="card" style="border-left:3px solid var(--gold);max-width:500px">
+    <div style="font-size:28px;margin-bottom:12px">🤝</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:8px">
+      Butuh {{ cf_error.needed }} Rating Lagi
+    </div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">
+      Collaborative Filtering bekerja dengan menganalisis <strong>pola rating</strong> Anda
+      dibandingkan pengguna lain. Minimal <strong>{{ cf_error.min_required }} drama</strong>
+      diperlukan agar pola preferensi Anda bisa terbaca dengan akurat.
+    </p>
+    <!-- Progress -->
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px">
+        <span>Progress Anda</span>
+        <span>{{ cf_error.current_count }} / {{ cf_error.min_required }} drama</span>
+      </div>
+      <div style="background:var(--soft);border-radius:20px;height:10px;overflow:hidden">
+        <div style="height:100%;border-radius:20px;
+             width:{{ [cf_error.current_count / cf_error.min_required * 100, 0]|max|int }}%;
+             background:var(--gold);transition:width .6s ease"></div>
+      </div>
+    </div>
+    <!-- Sisa yang dibutuhkan -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      {% for i in range(cf_error.min_required) %}
+      <div style="width:32px;height:32px;border-radius:50%;
+           background:{% if i < cf_error.current_count %}var(--gold){% else %}var(--soft){% endif %};
+           border:2px solid {% if i < cf_error.current_count %}var(--gold){% else %}var(--border){% endif %};
+           display:flex;align-items:center;justify-content:center;font-size:12px">
+        {{ '★' if i < cf_error.current_count else '☆' }}
+      </div>
+      {% endfor %}
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="{{ url_for('dramas_list') }}" class="btn btn-gold btn-sm">Cari Drama untuk Dirating</a>
+      <a href="{{ url_for('history') }}" class="btn btn-gray btn-sm">Lihat Riwayat</a>
+    </div>
+  </div>
+
+  {% elif recs_cf %}
+  <!-- Ada rekomendasi CF -->
+  <div class="drama-grid">
+    {% for r in recs_cf %}
+    <a href="{{ url_for('drama_detail', drama_id=r.drama_id) }}" class="drama-card">
+      <div class="drama-poster" style="background:linear-gradient(160deg,#1a2d0e,#1a1a2e)">
+        <span style="font-size:32px">🎭</span>
+        <div class="drama-poster-label">{{ r.title[:20] }}</div>
+        {% if r.predicted_rating %}<div class="drama-rating-badge">★ {{ "%.1f"|format(r.predicted_rating) }}</div>{% endif %}
+      </div>
+      <div class="drama-body">
+        <div class="drama-title">{{ r.title[:28] }}{% if r.title|length > 28 %}…{% endif %}</div>
+        {% if r.predicted_rating %}
+        <div class="sim-bar"><div class="sim-fill cb" style="width:{{ (r.predicted_rating/10*100)|int }}%"></div></div>
+        <div class="drama-meta">Prediksi: {{ "%.1f"|format(r.predicted_rating) }}/10</div>
+        {% endif %}
+        <div class="drama-tags">
+          {% for g in (r.genre or '').split(',')[:2] %}<span class="tag tag-gold" style="font-size:9px">{{ g.strip() }}</span>{% endfor %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="info-box"><span>ℹ</span> Tidak ada rekomendasi CF saat ini. Coba tambah lebih banyak rating.</div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

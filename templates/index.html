@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Beranda{% endblock %}
+{% block page_title %}Beranda{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<div class="index-hero">
+  <div class="hero-badge badge-blush" style="margin-bottom:14px">✦ Sistem Rekomendasi KDrama</div>
+  <h1>Temukan Drama Korea<br>yang Tepat Untukmu</h1>
+  <p>Sistem rekomendasi berbasis <strong style="color:var(--blush)">Content-Based Filtering</strong> dan <strong style="color:var(--gold)">Collaborative Filtering</strong> — dikembangkan sebagai penelitian skripsi menggunakan data nyata.</p>
+  <div class="index-stats">
+    <div class="index-stat"><strong>{{ stats.n_dramas }}</strong> Drama</div>
+    <div class="index-stat"><strong>{{ stats.n_users }}</strong> Pengguna</div>
+    <div class="index-stat"><strong>{{ stats.n_ratings }}</strong> Rating</div>
+  </div>
+  <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+    <a href="{{ url_for('dramas_list') }}" class="btn btn-primary">🎬 Jelajahi Drama</a>
+    {% if not current_user %}
+    <a href="{{ url_for('register') }}" class="btn btn-outline" style="border-color:rgba(255,255,255,.4);color:#fff">Daftar Sekarang</a>
+    {% else %}
+    <a href="{{ url_for('recommendations') }}" class="btn btn-gold">✨ Rekomendasi Saya</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- POPULAR DRAMAS -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+  <div>
+    <div class="hero-badge badge-blush">⭐ Populer</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800">Drama Populer</div>
+  </div>
+  <a href="{{ url_for('dramas_list') }}" class="btn btn-gray btn-sm">Lihat Semua →</a>
+</div>
+
+{% if popular %}
+<div class="drama-grid" style="margin-bottom:32px">
+  {% for d in popular %}
+  <a href="{{ url_for('drama_detail', drama_id=d.drama_id) }}" class="drama-card">
+    <div class="drama-poster" style="background:linear-gradient(160deg,{{ ['#1a1a2e','#2d1018','#1a2d1a','#1a1a3d','#2d1a0e']|random }},#444)">
+      <span style="font-size:36px">🎭</span>
+      <div class="drama-poster-label">{{ d.title[:22] }}</div>
+      {% if d.avg_r %}<div class="drama-rating-badge">★ {{ d.avg_r }}</div>{% endif %}
+    </div>
+    <div class="drama-body">
+      <div class="drama-title">{{ d.title[:28] }}{% if d.title|length > 28 %}…{% endif %}</div>
+      <div class="drama-meta">{{ d.year or '—' }} · {{ d.n_ratings or 0 }} rating</div>
+      <div class="drama-tags">
+        {% for g in (d.genre or '').split(',')[:2] %}
+        <span class="tag tag-blush">{{ g.strip() }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="margin-bottom:32px">
+  <div class="empty-icon">🎬</div>
+  <h3>Belum ada drama</h3>
+  <p>Import data drama terlebih dahulu melalui panel admin.</p>
+  {% if current_user and current_user.role == 'admin' %}
+  <a href="{{ url_for('admin_import') }}" class="btn btn-primary">Import Data</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- GENRE PILLS -->
+{% if genres %}
+<div style="margin-bottom:14px">
+  <div class="hero-badge badge-gold">🏷️ Genre</div>
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;margin-bottom:12px">Jelajahi per Genre</div>
+</div>
+<div class="genre-pills" style="margin-bottom:32px">
+  {% for g in genres[:16] %}
+  <a href="{{ url_for('dramas_list', genre=g) }}" class="genre-pill">{{ g }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- LATEST DRAMAS -->
+{% if latest %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+  <div>
+    <div class="hero-badge badge-gold">🆕 Terbaru</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800">Drama Terbaru</div>
+  </div>
+  <a href="{{ url_for('dramas_list', sort='newest') }}" class="btn btn-gray btn-sm">Lihat Semua →</a>
+</div>
+<div class="drama-grid" style="margin-bottom:32px">
+  {% for d in latest %}
+  <a href="{{ url_for('drama_detail', drama_id=d.drama_id) }}" class="drama-card">
+    <div class="drama-poster" style="background:linear-gradient(160deg,#0d1117,#1a2d1a)">
+      <span style="font-size:36px">📺</span>
+      <div class="drama-poster-label">{{ d.title[:22] }}</div>
+      {% if d.year %}<div class="drama-rating-badge">{{ d.year }}</div>{% endif %}
+    </div>
+    <div class="drama-body">
+      <div class="drama-title">{{ d.title[:28] }}{% if d.title|length > 28 %}…{% endif %}</div>
+      <div class="drama-meta">{{ d.year or '—' }}</div>
+      <div class="drama-tags">
+        {% for g in (d.genre or '').split(',')[:2] %}
+        <span class="tag">{{ g.strip() }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- HOW IT WORKS -->
+<div style="margin-bottom:14px">
+  <div class="hero-badge badge-gray">📚 Cara Kerja</div>
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;margin-bottom:16px">Metode Rekomendasi</div>
+</div>
+<div class="two-col" style="margin-bottom:12px">
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:10px">🏷️</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:6px">Content-Based Filtering</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7">Merekomendasikan drama berdasarkan kesamaan konten — genre, pemeran, sinopsis, dan tag menggunakan algoritma <strong>TF-IDF + Cosine Similarity</strong>.</p>
+  </div>
+  <div class="card">
+    <div style="font-size:28px;margin-bottom:10px">🤝</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:6px">Collaborative Filtering</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7">Merekomendasikan berdasarkan pola rating pengguna lain yang memiliki selera serupa, menggunakan <strong>Item-Based CF</strong> dengan prediksi rating tertimbang.</p>
+  </div>
+</div>
+{% endblock %}

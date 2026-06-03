@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Log Aktivitas{% endblock %}
+{% block page_title %}Log Aktivitas{% endblock %}
+
+{% block content %}
+<div class="admin-nav">
+  <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+  <a href="{{ url_for('admin_dramas') }}">🎬 Drama</a>
+  <a href="{{ url_for('admin_users') }}">👥 Pengguna</a>
+  <a href="{{ url_for('admin_import') }}">📥 Import</a>
+  <a href="{{ url_for('admin_retrain') }}">🔁 Retrain</a>
+  <a href="{{ url_for('admin_logs') }}" class="active">📋 Log</a>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:700">Log Aktivitas ({{ total }})</div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap">
+    <a href="{{ url_for('admin_logs') }}" class="btn {% if not action_filter %}btn-primary{% else %}btn-gray{% endif %} btn-sm">Semua</a>
+    {% for a in actions %}
+    <a href="?action={{ a.action }}" class="btn {% if action_filter==a.action %}btn-primary{% else %}btn-gray{% endif %} btn-sm">{{ a.action }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Detail</th><th>IP</th></tr></thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td style="font-size:11.5px;color:var(--muted);white-space:nowrap">{{ log.created_at[:16] }}</td>
+        <td style="font-weight:600">{{ log.username or '—' }}</td>
+        <td>
+          <span class="tag {% if 'LOGIN' in log.action %}tag-green{% elif 'ADMIN' in log.action %}tag-blush{% elif log.action=='RATE' %}tag-gold{% else %}{% endif %}" style="font-size:10px">
+            {{ log.action }}
+          </span>
+        </td>
+        <td style="font-size:11.5px;color:var(--muted)">{{ log.detail or '—' }}</td>
+        <td style="font-size:11px;color:var(--muted)">{{ log.ip_addr or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}<a href="?page={{ page-1 }}&action={{ action_filter }}">← Prev</a>{% endif %}
+  {% for p in range([1,page-2]|max, [pages+1,page+3]|min) %}
+  {% if p==page %}<span class="current">{{ p }}</span>{% else %}<a href="?page={{ p }}&action={{ action_filter }}">{{ p }}</a>{% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="?page={{ page+1 }}&action={{ action_filter }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

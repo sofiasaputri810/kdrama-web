@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Update Model{% endblock %}
+{% block page_title %}Update Model{% endblock %}
+
+{% block content %}
+<div class="admin-nav">
+  <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+  <a href="{{ url_for('admin_dramas') }}">🎬 Drama</a>
+  <a href="{{ url_for('admin_users') }}">👥 Pengguna</a>
+  <a href="{{ url_for('admin_import') }}">📥 Import</a>
+  <a href="{{ url_for('admin_retrain') }}" class="active">🔁 Retrain</a>
+  <a href="{{ url_for('admin_logs') }}">📋 Log</a>
+</div>
+
+
+<div class="info-box" style="margin-bottom:16px">
+  <span>📚</span>
+  <div>
+    <strong>Library yang digunakan sesuai proposal:</strong>
+    Pandas (preprocessing data), Scikit-learn (TF-IDF CBF), Scikit-surprise (evaluasi CF standar akademis), SciPy (cosine similarity).
+    Install: <code style="background:var(--soft);padding:1px 5px;border-radius:4px">pip install -r requirements.txt</code>
+  </div>
+</div>
+<div class="two-col" style="margin-bottom:18px">
+  <!-- TRAIN CBF -->
+  <div class="card">
+    <div style="font-size:22px;margin-bottom:8px">🏷️</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:10px">Training CBF + Item Rating Augmentation</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:14px">TF-IDF konten (genre, cast, sinopsis, tags) digabung dengan item rating metadata (rating_y dari dataset). <strong>Pure CBF</strong> — tidak menggunakan data rating pengguna saat training.</p>
+    <form method="post">
+      <input type="hidden" name="action" value="train_cbf">
+      <div class="form-group">
+        <label class="form-label">Fitur Konten</label>
+        <select name="features" class="form-control" style="font-size:12.5px;padding:7px 10px">
+          <option value="all">all — Semua Fitur</option>
+          <option value="genre_cast">genre_cast — Genre + Cast</option>
+          <option value="genre_plot">genre_plot — Genre + Sinopsis</option>
+          <option value="genre_only">genre_only — Genre Saja</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alpha Rating (α) — Bobot Fitur Rating</label>
+        <input type="number" name="alpha" class="form-control" min="0" max="1" step="0.05"
+               value="0.3" style="font-size:12.5px;padding:7px 10px">
+        <div class="form-hint">0 = Konten teks saja · 0.3 = 70% konten + 30% item rating metadata (direkomendasikan) · 1 = Item rating saja<br><span style="color:var(--green-dark)">Catatan: item rating = kolom rating_y dari dataset (atribut item, bukan data pengguna) — tetap Pure CBF</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button type="submit" class="btn btn-primary btn-sm" onclick="startTrainingPoll()">▶ Train CBF</button>
+        <span id="train-status-CBF" style="font-size:12px;color:var(--muted)">
+          {% if training_status.CBF %}
+            {% if training_status.CBF.status=='done' %}<span style="color:var(--green-dark)">✓ Selesai</span>
+            {% elif training_status.CBF.status=='error' %}<span style="color:var(--cherry)">✕ Error</span>
+            {% elif training_status.CBF.status=='running' %}<span class="spinner spinner-dark"></span>
+            {% endif %}
+          {% endif %}
+        </span>
+      </div>
+    </form>
+  </div>
+
+  <!-- TRAIN CF -->
+  <div class="card">
+    <div style="font-size:22px;margin-bottom:8px">🤝</div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:10px">Training CF</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:14px">Item-Based Collaborative Filtering menggunakan matrix rating pengguna (data train).</p>
+    <form method="post">
+      <input type="hidden" name="action" value="train_cf">
+      <div class="form-group">
+        <label class="form-label">Metode Similarity</label>
+        <select name="method" class="form-control" style="font-size:12.5px;padding:7px 10px">
+          <option value="cosine">Cosine Similarity</option>
+          <option value="pearson">Pearson Correlation</option>
+          <option value="adjusted_cosine">Adjusted Cosine</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button type="submit" class="btn btn-gold btn-sm" onclick="startTrainingPoll()">▶ Train CF</button>
+        <span id="train-status-CF" style="font-size:12px;color:var(--muted)">
+          {% if training_status.CF %}
+            {% if training_status.CF.status=='done' %}<span style="color:var(--green-dark)">✓ Selesai</span>
+            {% elif training_status.CF.status=='error' %}<span style="color:var(--cherry)">✕ Error</span>
+            {% elif training_status.CF.status=='running' %}<span class="spinner spinner-dark"></span>
+            {% endif %}
+          {% endif %}
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EVALUATE -->
+<div class="card" style="margin-bottom:18px">
+  <div style="font-size:22px;margin-bottom:8px">📊</div>
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;font-weight:700;margin-bottom:10px">Evaluasi Model</div>
+  <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Hitung Precision@K, Recall@K, F1, RMSE, NDCG menggunakan data test set.</p>
+  <form method="post" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <input type="hidden" name="action" value="evaluate">
+    <div class="form-group" style="margin-bottom:0;width:100px">
+      <label class="form-label">K</label>
+      <input type="number" name="k" class="form-control" value="10" min="1" max="20" style="padding:7px 10px;font-size:12.5px">
+    </div>
+    <div class="form-group" style="margin-bottom:0;width:130px">
+      <label class="form-label">Threshold Rating</label>
+      <input type="number" name="threshold" class="form-control" value="7.0" step="0.5" min="1" max="10" style="padding:7px 10px;font-size:12.5px">
+    </div>
+    <button type="submit" class="btn btn-green btn-sm">📊 Evaluasi</button>
+  </form>
+</div>
+
+<!-- EVAL RESULTS -->
+{% if eval_results %}
+<div class="card" style="margin-bottom:18px">
+  <div class="card-title">📈 Hasil Evaluasi Terakhir</div>
+  <div class="two-col">
+    {% for r in eval_results %}
+    <div style="background:var(--soft);border-radius:10px;padding:14px">
+      <div style="font-family:'Nanum Myeongjo',serif;font-size:14px;font-weight:700;margin-bottom:10px">{{ r.method }} — K={{ r.k }} · {{ r.created_at[:10] }}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+        {% for label, val in [('Precision', r.precision_k),('Recall', r.recall_k),('F1', r.f1_k),('NDCG', r.ndcg),('RMSE', r.rmse),('Coverage', r.coverage)] %}
+        {% if val is not none %}
+        <div style="text-align:center;background:var(--card);border-radius:7px;padding:8px">
+          <div style="font-size:14px;font-weight:800;font-family:'Nanum Myeongjo',serif">{{ "%.4f"|format(val) }}</div>
+          <div style="font-size:9.5px;color:var(--muted)">{{ label }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- TRAINING LOG -->
+{% if train_log %}
+<div class="card">
+  <div class="card-title">📋 Log Training</div>
+  <div class="table-wrap" style="border:none;border-radius:0">
+    <table>
+      <thead><tr><th>Metode</th><th>Status</th><th>Pesan</th><th>Durasi</th><th>Waktu</th></tr></thead>
+      <tbody>
+        {% for log in train_log %}
+        <tr>
+          <td><span class="tag {% if log.method=='CBF' %}tag-blush{% else %}tag-gold{% endif %}">{{ log.method }}</span></td>
+          <td><span class="tag {% if log.status=='done' %}tag-green{% else %}tag-blush{% endif %}">{{ log.status }}</span></td>
+          <td style="font-size:11.5px;color:var(--muted)">{{ log.message or '—' }}</td>
+          <td style="font-size:11.5px">{{ log.duration_s or '—' }}s</td>
+          <td style="font-size:11px;color:var(--muted)">{{ log.created_at[:16] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script>
+{% if training_status and (training_status.get('CBF',{}).get('status')=='running' or training_status.get('CF',{}).get('status')=='running') %}
+document.addEventListener('DOMContentLoaded', startTrainingPoll);
+{% endif %}
+</script>{% endblock %}

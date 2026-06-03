@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}{{ drama.title }}{% endblock %}
+{% block page_title %}{{ drama.title }}{% endblock %}
+
+{% block content %}
+<!-- HEADER -->
+<div class="drama-detail-header">
+  <div class="drama-detail-poster" style="background:linear-gradient(160deg,#1a1a2e,#2d1018)">
+    <span style="font-size:54px">🎭</span>
+  </div>
+  <div class="drama-detail-info">
+    <div class="drama-detail-title">{{ drama.title }}</div>
+    <div class="drama-detail-meta">
+      {% if drama.year %}<div class="detail-meta-item">📅 {{ drama.year }}</div>{% endif %}
+      {% if drama.episodes %}<div class="detail-meta-item">📺 {{ drama.episodes }} eps</div>{% endif %}
+      {% if stats and stats.avg_rating %}<div class="detail-meta-item">⭐ {{ stats.avg_rating }} / 10</div>{% endif %}
+      {% if stats and stats.n_ratings %}<div class="detail-meta-item">💬 {{ stats.n_ratings }} rating</div>{% endif %}
+    </div>
+    <div class="drama-tags" style="margin-bottom:12px;gap:6px">
+      {% for g in (drama.genre or '').split(',') %}
+      {% if g.strip() %}
+      <a href="{{ url_for('dramas_list', genre=g.strip()) }}" class="tag tag-blush" style="font-size:11px">{{ g.strip() }}</a>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% if drama.synopsis %}
+    <p style="font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:14px;max-width:600px">{{ drama.synopsis[:300] }}{% if drama.synopsis|length > 300 %}…{% endif %}</p>
+    {% endif %}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="{{ url_for('rate_drama', drama_id=drama.drama_id) }}" class="btn btn-primary btn-sm">⭐ Beri Rating</a>
+      {% if current_user %}
+      <button onclick="toggleWatchlist({{ drama.drama_id }}, this)"
+              class="wl-btn btn btn-gray btn-sm {% if in_watchlist %}active{% endif %}"
+              title="{{ 'Hapus dari Watchlist' if in_watchlist else 'Tambah ke Watchlist' }}">
+        {{ '♥ Watchlist' if in_watchlist else '♡ Watchlist' }}
+      </button>
+      {% endif %}
+    </div>
+    {% if user_rating %}
+    <div class="info-box" style="margin-top:12px">
+      <span>⭐</span>
+      <div>Rating Anda: <strong>{{ user_rating.rating }}/10</strong>
+        {% if user_rating.review %} — "{{ user_rating.review[:80] }}"{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="two-col" style="margin-bottom:18px">
+  <!-- DETAILS -->
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">ℹ️ Informasi Drama</div>
+      <table style="width:100%;font-size:12.5px;border-collapse:collapse">
+        {% if drama.director %}
+        <tr><td style="color:var(--muted);padding:4px 0;width:100px">Sutradara</td><td>{{ drama.director }}</td></tr>
+        {% endif %}
+        {% if drama.screenwriter %}
+        <tr><td style="color:var(--muted);padding:4px 0">Penulis</td><td>{{ drama.screenwriter }}</td></tr>
+        {% endif %}
+        {% if drama.cast %}
+        <tr><td style="color:var(--muted);padding:4px 0;vertical-align:top">Pemeran</td>
+          <td>{{ drama.cast[:120] }}{% if drama.cast|length > 120 %}…{% endif %}</td></tr>
+        {% endif %}
+        {% if drama.tags %}
+        <tr><td style="color:var(--muted);padding:4px 0;vertical-align:top">Tag</td>
+          <td><div class="drama-tags" style="gap:4px">
+            {% for t in drama.tags.split(',')[:6] %}
+            <span class="tag" style="font-size:10px">{{ t.strip() }}</span>{% endfor %}
+          </div></td></tr>
+        {% endif %}
+      </table>
+    </div>
+
+    <!-- RATING DISTRIBUTION -->
+    {% if dist %}
+    <div class="card">
+      <div class="card-title">📊 Distribusi Rating</div>
+      <div class="rating-dist">
+        {% set max_cnt = dist|map(attribute='cnt')|max %}
+        {% for item in dist|reverse %}
+        <div class="dist-row">
+          <div class="dist-lbl">{{ item.r }}</div>
+          <div class="dist-bar">
+            <div class="dist-fill" style="width:{{ (item.cnt / max_cnt * 100)|int }}%"></div>
+          </div>
+          <div class="dist-cnt">{{ item.cnt }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- SIMILAR DRAMAS (CBF) -->
+  <div>
+    {% if recs_cbf %}
+    <div class="card">
+      <div class="card-title">🏷️ Drama Serupa (CBF)</div>
+      {% for r in recs_cbf %}
+      <a href="{{ url_for('drama_detail', drama_id=r.drama_id) }}" style="text-decoration:none;color:inherit">
+        <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
+          <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#1a1a2e,#2d1018);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🎭</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</div>
+            <div class="sim-bar" style="margin:3px 0">
+              <div class="sim-fill" style="width:{{ (r.similarity * 100)|int }}%"></div>
+            </div>
+            <div style="font-size:10px;color:var(--muted)">{{ (r.similarity * 100)|int }}% mirip</div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- REVIEWS -->
+{% if reviews %}
+<div class="card">
+  <div class="card-title">💬 Ulasan Pengguna</div>
+  {% for rv in reviews %}
+  <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <div style="width:28px;height:28px;border-radius:50%;background:{{ rv.avatar_color or '#e8506a' }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">
+        {{ (rv.display_name or rv.username)[0].upper() }}</div>
+      <div style="font-size:12.5px;font-weight:600">{{ rv.display_name or rv.username }}</div>
+      <div class="tag tag-gold" style="font-size:10px">★ {{ rv.rating }}</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-left:auto">{{ rv.created_at[:10] }}</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.65;padding-left:36px">{{ rv.review }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

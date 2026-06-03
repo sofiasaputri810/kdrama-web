@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Watchlist{% endblock %}
+{% block page_title %}Watchlist{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-blush">📌 Tersimpan</div>
+  <h1 class="hero-title">Watchlist Saya</h1>
+  <p class="hero-desc">{{ items|length }} drama yang ingin Anda tonton.</p>
+</div>
+
+{% if items %}
+<div class="drama-grid">
+  {% for item in items %}
+  <div class="drama-card" style="position:relative">
+    <a href="{{ url_for('drama_detail', drama_id=item.drama_id) }}" style="text-decoration:none;color:inherit">
+      <div class="drama-poster" style="background:linear-gradient(160deg,#1a1a2e,#2d1018)">
+        <span style="font-size:36px">🎭</span>
+        <div class="drama-poster-label">{{ item.title[:20] }}</div>
+      </div>
+      <div class="drama-body">
+        <div class="drama-title">{{ item.title[:28] }}{% if item.title|length > 28 %}…{% endif %}</div>
+        <div class="drama-meta">{{ item.year or '—' }}</div>
+        <div class="drama-tags">
+          {% for g in (item.genre or '').split(',')[:2] %}
+          <span class="tag tag-blush" style="font-size:9.5px">{{ g.strip() }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </a>
+    <div style="padding:0 12px 10px;display:flex;gap:6px">
+      <a href="{{ url_for('rate_drama', drama_id=item.drama_id) }}" class="btn btn-outline btn-xs" style="flex:1;justify-content:center">⭐ Rating</a>
+      <form method="post" action="{{ url_for('toggle_watchlist', drama_id=item.drama_id) }}" style="flex:1">
+        <button type="submit" class="btn btn-gray btn-xs" style="width:100%">✕ Hapus</button>
+      </form>
+    </div>
+    <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.5);color:#fff;font-size:9.5px;padding:2px 7px;border-radius:10px;backdrop-filter:blur(4px)">
+      {{ item.added_at[:10] }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">📌</div>
+  <h3>Watchlist kosong</h3>
+  <p>Tambahkan drama ke watchlist dengan menekan tombol ♡ di halaman detail drama.</p>
+  <a href="{{ url_for('dramas_list') }}" class="btn btn-primary">Jelajahi Drama</a>
+</div>
+{% endif %}
+{% endblock %}

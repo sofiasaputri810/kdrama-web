@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}KDrama Recommend{% endblock %} — Sistem Rekomendasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <a href="{{ url_for('index') }}" style="text-decoration:none">
+      <div class="sb-ko">드라마 추천 시스템</div>
+      <div class="sb-name">KDrama<br>Recommend</div>
+      <div class="sb-sub">SKRIPSI · SISTEM REKOMENDASI</div>
+    </a>
+  </div>
+
+  <div class="sb-nav">
+    <div class="nav-lbl">Publik</div>
+    <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint=='index' %}active{% endif %}">
+      <span class="nav-icon">🏠</span>
+      <span>Beranda<div class="nav-sub-label">Drama Populer</div></span>
+    </a>
+    <a href="{{ url_for('dramas_list') }}" class="nav-item {% if request.endpoint in ['dramas_list','drama_detail'] %}active{% endif %}">
+      <span class="nav-icon">🎬</span>
+      <span>Daftar Drama<div class="nav-sub-label">Filter & Browse</div></span>
+    </a>
+    <a href="{{ url_for('about') }}" class="nav-item {% if request.endpoint=='about' %}active{% endif %}">
+      <span class="nav-icon">📖</span>
+      <span>Tentang<div class="nav-sub-label">Metode Penelitian</div></span>
+    </a>
+
+    {% if current_user %}
+      <div class="nav-lbl">Pengguna</div>
+      <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard<div class="nav-sub-label">Ringkasan Aktivitas</div></span>
+      </a>
+      <a href="{{ url_for('recommendations') }}" class="nav-item {% if request.endpoint=='recommendations' %}active{% endif %}">
+        <span class="nav-icon">✨</span>
+        <span>Rekomendasi<div class="nav-sub-label">Untuk Anda</div></span>
+      </a>
+      <a href="{{ url_for('compare') }}" class="nav-item {% if request.endpoint=='compare' %}active{% endif %}">
+        <span class="nav-icon">⚖️</span>
+        <span>Pencarian<div class="nav-sub-label">Analisis Metode</div></span>
+      </a>
+      <a href="{{ url_for('watchlist') }}" class="nav-item {% if request.endpoint=='watchlist' %}active{% endif %}">
+        <span class="nav-icon">📌</span>
+        <span>Watchlist<div class="nav-sub-label">Drama Tersimpan</div></span>
+      </a>
+      <a href="{{ url_for('history') }}" class="nav-item {% if request.endpoint=='history' %}active{% endif %}">
+        <span class="nav-icon">🕐</span>
+        <span>Riwayat<div class="nav-sub-label">Drama Dirating</div></span>
+      </a>
+
+      {% if current_user.role == 'admin' %}
+      <div class="nav-lbl">Admin</div>
+      <a href="{{ url_for('admin_dashboard') }}" class="nav-item {% if 'admin' in request.endpoint %}active{% endif %}">
+        <span class="nav-icon">⚙️</span>
+        <span>Panel Admin<div class="nav-sub-label">Kelola Sistem</div></span>
+      </a>
+      {% endif %}
+    {% else %}
+      <div class="nav-lbl">Akun</div>
+      <a href="{{ url_for('login') }}" class="nav-item {% if request.endpoint=='login' %}active{% endif %}">
+        <span class="nav-icon">🔑</span>
+        <span>Login</span>
+      </a>
+      <a href="{{ url_for('register') }}" class="nav-item {% if request.endpoint=='register' %}active{% endif %}">
+        <span class="nav-icon">📝</span>
+        <span>Daftar</span>
+      </a>
+    {% endif %}
+  </div>
+
+  {% if current_user %}
+  <div class="sb-user">
+    <div class="sb-avatar" style="background:{{ current_user.avatar_color or '#e8506a' }}">
+      {{ (current_user.display_name or current_user.username)[0].upper() }}
+    </div>
+    <div class="sb-user-info">
+      <div class="sb-user-name">{{ current_user.display_name or current_user.username }}</div>
+      <div class="sb-user-role">{{ '★ Admin' if current_user.role=='admin' else 'Pengguna' }}</div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="sb-logout" title="Logout">⎋</a>
+  </div>
+  {% endif %}
+
+  <div class="sb-footer">KDrama Recommend · {{ total_dramas }} Drama · 2025</div>
+</nav>
+
+<!-- MOBILE TOGGLE -->
+<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">{% block page_title %}{% endblock %}</div>
+      {% block breadcrumb %}{% endblock %}
+    </div>
+    <div class="topbar-right">
+      <form action="{{ url_for('search') }}" method="get" class="topbar-search">
+        <span>🔍</span>
+        <input type="text" name="q" placeholder="Cari drama..." value="{{ request.args.get('q','') }}">
+      </form>
+      {% if current_user %}
+      <a href="{{ url_for('profile') }}" class="topbar-avatar" style="background:{{ current_user.avatar_color or '#e8506a' }}" title="{{ current_user.username }}">
+        {{ (current_user.display_name or current_user.username)[0].upper() }}
+      </a>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-sm btn-primary">Login</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- FLASH MESSAGES -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for cat, msg in messages %}
+    <div class="flash flash-{{ cat }}">
+      <span>{{ '✓' if cat=='success' else ('⚠' if cat=='warning' else ('✕' if cat=='error' else 'ℹ')) }}</span>
+      {{ msg }}
+      <button onclick="this.parentElement.remove()" class="flash-close">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- PAGE CONTENT -->
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

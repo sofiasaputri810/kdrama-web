@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}KDrama Recommend{% endblock %} — Sistem Rekomendasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --ink:#1a1018; --paper:#fdf6f0; --blush:#e8506a; --cherry:#c1253e;
+    --gold:#d4a843; --gold-dark:#b8900e; --soft:#f2e8e5; --muted:#8a7b78;
+    --card:#fff9f7; --border:#e8d8d4; --green:#3dba7e; --radius:12px;
+    --shadow:0 4px 20px rgba(26,16,24,.08); --shadow-lg:0 12px 40px rgba(26,16,24,.14);
+  }
+  body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink);
+         min-height:100vh; display:flex; align-items:center; justify-content:center;
+         padding:20px; }
+  /* Auth card */
+  .auth-wrap { width:100%; max-width:460px; }
+  .auth-card { background:var(--card); border:1px solid var(--border);
+               border-radius:18px; padding:36px; box-shadow:var(--shadow-lg); }
+  .auth-logo { text-align:center; margin-bottom:26px; }
+  .auth-logo-ko { font-family:'Nanum Myeongjo',serif; font-size:10px; color:var(--blush);
+                  letter-spacing:3px; text-transform:uppercase; margin-bottom:4px; }
+  .auth-logo-name { font-family:'Nanum Myeongjo',serif; font-size:22px;
+                    font-weight:800; color:var(--ink); }
+  .auth-title { font-family:'Nanum Myeongjo',serif; font-size:20px;
+                font-weight:700; margin-bottom:4px; }
+  .auth-sub { font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.55; }
+  /* Form */
+  .form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; }
+  .form-label { font-size:10.5px; font-weight:700; letter-spacing:.8px;
+                text-transform:uppercase; color:var(--muted); }
+  .form-control { padding:10px 13px; border:1.5px solid var(--border); border-radius:9px;
+                  background:var(--paper); font-family:'DM Sans',sans-serif;
+                  font-size:13px; color:var(--ink); outline:none; width:100%;
+                  transition:border-color .18s; }
+  .form-control:focus { border-color:var(--blush); }
+  .form-row { display:flex; gap:10px; }
+  .form-row .form-group { flex:1; }
+  /* Button */
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px;
+         padding:10px 20px; border-radius:9px; font-family:'DM Sans',sans-serif;
+         font-size:13px; font-weight:600; cursor:pointer; border:none;
+         text-decoration:none; transition:all .18s; width:100%; }
+  .btn-primary { background:var(--blush); color:#fff; }
+  .btn-primary:hover { background:var(--cherry); }
+  /* Flash */
+  .flash { display:flex; align-items:center; gap:8px; padding:10px 14px;
+           border-radius:9px; margin-bottom:12px; font-size:13px; font-weight:500; }
+  .flash-success { background:#e6f9ef; color:#1a5c38; border:1px solid #b2dfc8; }
+  .flash-error   { background:#fef0f0; color:#8b1a1a; border:1px solid #f5c0c0; }
+  .flash-warning { background:#fef9e6; color:#7a5c00; border:1px solid #e8d89a; }
+  .flash-info    { background:#eef4fe; color:#1a3c6e; border:1px solid #b8d0f7; }
+  /* Divider */
+  .auth-divider { display:flex; align-items:center; gap:12px; margin:16px 0;
+                  font-size:12px; color:var(--muted); }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  /* Info box */
+  .info-box { background:var(--soft); border-radius:9px; padding:11px 14px;
+              font-size:11.5px; color:var(--muted); text-align:center; margin-top:14px; }
+  a { color:var(--blush); }
+  .back-link { display:block; text-align:center; margin-top:14px;
+               font-size:12px; color:var(--muted); text-decoration:none; }
+  .back-link:hover { color:var(--ink); }
+  /* Background decoration */
+  body::before { content:'드라마 추천'; font-family:'Nanum Myeongjo',serif;
+                 font-size:clamp(60px,12vw,140px); font-weight:800;
+                 color:rgba(232,80,106,.04); position:fixed; top:50%; left:50%;
+                 transform:translate(-50%,-50%); white-space:nowrap;
+                 pointer-events:none; z-index:0; }
+  .auth-wrap { position:relative; z-index:1; }
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+  <div class="flash flash-{{ cat }}" style="margin-bottom:10px">
+    <span>{{ '✓' if cat=='success' else ('⚠' if cat=='warning' else ('✕' if cat=='error' else 'ℹ')) }}</span>
+    {{ msg }}
+  </div>
+  {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

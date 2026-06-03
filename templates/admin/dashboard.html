@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Admin{% endblock %}
+{% block page_title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-blush">⚙️ Admin</div>
+  <h1 class="hero-title">Panel Administrasi</h1>
+  <p class="hero-desc">Kelola data, model, dan pengguna sistem rekomendasi KDrama.</p>
+</div>
+
+<!-- ADMIN NAV -->
+<div class="admin-nav">
+  <a href="{{ url_for('admin_dashboard') }}" class="active">📊 Dashboard</a>
+  <a href="{{ url_for('admin_dramas') }}">🎬 Drama</a>
+  <a href="{{ url_for('admin_users') }}">👥 Pengguna</a>
+  <a href="{{ url_for('admin_import') }}">📥 Import</a>
+  <a href="{{ url_for('admin_retrain') }}">🔁 Retrain</a>
+  <a href="{{ url_for('admin_logs') }}">📋 Log</a>
+</div>
+
+<!-- STATS -->
+<div class="stat-grid" style="margin-bottom:22px">
+  <div class="stat-card"><div class="stat-val" style="color:var(--blush)">{{ stats.n_dramas }}</div><div class="stat-lbl">Drama Aktif</div></div>
+  <div class="stat-card"><div class="stat-val" style="color:var(--gold-dark)">{{ stats.n_users }}</div><div class="stat-lbl">Pengguna</div></div>
+  <div class="stat-card"><div class="stat-val" style="color:var(--green-dark)">{{ stats.n_ratings }}</div><div class="stat-lbl">Total Rating</div></div>
+  <div class="stat-card"><div class="stat-val">{{ stats.n_wl }}</div><div class="stat-lbl">Watchlist</div></div>
+  <div class="stat-card">
+    <div class="stat-val" style="font-size:18px;color:{% if stats.cbf_ready %}var(--green-dark){% else %}var(--blush){% endif %}">
+      {{ 'Siap' if stats.cbf_ready else 'Belum' }}
+    </div>
+    <div class="stat-lbl">Model CBF</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" style="font-size:18px;color:{% if stats.cf_ready %}var(--green-dark){% else %}var(--blush){% endif %}">
+      {{ 'Siap' if stats.cf_ready else 'Belum' }}
+    </div>
+    <div class="stat-lbl">Model CF</div>
+  </div>
+</div>
+
+<div class="two-col" style="margin-bottom:18px">
+  <!-- RECENT USERS -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin:0">👥 Pengguna Terbaru</div>
+      <a href="{{ url_for('admin_users') }}" class="btn btn-gray btn-xs">Semua</a>
+    </div>
+    {% for u in recent_users %}
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:28px;height:28px;border-radius:50%;background:{{ u.avatar_color or '#e8506a' }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0">
+        {{ u.username[0].upper() }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:600">{{ u.username }}</div>
+        <div style="font-size:10.5px;color:var(--muted)">{{ u.created_at[:10] }}</div>
+      </div>
+      {% if u.role == 'admin' %}<span class="admin-badge">Admin</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- TOP DRAMAS -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin:0">🎬 Drama Terpopuler</div>
+      <a href="{{ url_for('admin_dramas') }}" class="btn btn-gray btn-xs">Semua</a>
+    </div>
+    {% for d in top_dramas %}
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:22px;text-align:center;font-size:11px;color:var(--muted);flex-shrink:0">{{ loop.index }}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.title }}</div>
+        <div style="font-size:10.5px;color:var(--muted)">{{ d.n_r }} rating · ★ {{ d.avg_r or '—' }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- MODEL STATUS + RECENT LOGS -->
+<div class="two-col">
+  {% if eval_data %}
+  <div class="card">
+    <div class="card-title">📊 Hasil Evaluasi Terakhir</div>
+    {% for r in eval_data %}
+    <div style="background:var(--soft);border-radius:9px;padding:12px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">{{ r.method }} (K={{ r.k }}) · {{ r.created_at[:10] }}</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px">
+        {% if r.precision_k is not none %}<span>P@K: <strong>{{ "%.4f"|format(r.precision_k) }}</strong></span>{% endif %}
+        {% if r.recall_k is not none %}<span>R@K: <strong>{{ "%.4f"|format(r.recall_k) }}</strong></span>{% endif %}
+        {% if r.f1_k is not none %}<span>F1: <strong>{{ "%.4f"|format(r.f1_k) }}</strong></span>{% endif %}
+        {% if r.rmse is not none %}<span>RMSE: <strong>{{ "%.4f"|format(r.rmse) }}</strong></span>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    <a href="{{ url_for('admin_retrain') }}" class="btn btn-outline btn-sm">🔁 Retrain Model</a>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin:0">📋 Aktivitas Terbaru</div>
+      <a href="{{ url_for('admin_logs') }}" class="btn btn-gray btn-xs">Semua</a>
+    </div>
+    {% for log in recent_logs %}
+    <div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:11.5px">
+      <span class="tag" style="font-size:9px;flex-shrink:0">{{ log.action }}</span>
+      <span style="color:var(--muted)">{{ log.username or '—' }}</span>
+      <span style="color:var(--muted);margin-left:auto;flex-shrink:0">{{ log.created_at[11:16] }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

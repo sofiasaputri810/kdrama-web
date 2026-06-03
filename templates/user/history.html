@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Rating{% endblock %}
+{% block page_title %}Riwayat Rating{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-gold">🕐 Riwayat</div>
+  <h1 class="hero-title">Riwayat Rating</h1>
+  <p class="hero-desc">{{ total }} drama yang sudah Anda rating.</p>
+</div>
+
+{% if stats and stats.n %}
+<div class="stat-grid" style="margin-bottom:20px">
+  <div class="stat-card"><div class="stat-val" style="color:var(--blush)">{{ stats.n }}</div><div class="stat-lbl">Total Rating</div></div>
+  <div class="stat-card"><div class="stat-val" style="color:var(--gold-dark)">{{ stats.avg or '—' }}</div><div class="stat-lbl">Rata-rata</div></div>
+  <div class="stat-card"><div class="stat-val" style="color:var(--green-dark)">{{ stats.max_r|int if stats.max_r else '—' }}</div><div class="stat-lbl">Tertinggi</div></div>
+  <div class="stat-card"><div class="stat-val">{{ stats.min_r|int if stats.min_r else '—' }}</div><div class="stat-lbl">Terendah</div></div>
+</div>
+{% endif %}
+
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Drama</th>
+        <th>Genre</th>
+        <th>Tahun</th>
+        <th>Rating Anda</th>
+        <th>Tanggal</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          <a href="{{ url_for('drama_detail', drama_id=item.drama_id) }}" style="font-weight:600;color:var(--ink);text-decoration:none">
+            {{ item.title[:36] }}{% if item.title|length > 36 %}…{% endif %}
+          </a>
+        </td>
+        <td style="max-width:120px">
+          {% for g in (item.genre or '').split(',')[:1] %}<span class="tag" style="font-size:10px">{{ g.strip() }}</span>{% endfor %}
+        </td>
+        <td style="color:var(--muted)">{{ item.year or '—' }}</td>
+        <td><span class="tag tag-gold">★ {{ item.rating }}</span></td>
+        <td style="color:var(--muted);font-size:11.5px">{{ item.created_at[:10] }}</td>
+        <td>
+          <a href="{{ url_for('rate_drama', drama_id=item.drama_id) }}" class="btn btn-gray btn-xs">Edit</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}<a href="?page={{ page-1 }}">← Prev</a>{% endif %}
+  {% for p in range([1,page-2]|max, [pages+1,page+3]|min) %}
+  {% if p==page %}<span class="current">{{ p }}</span>{% else %}<a href="?page={{ p }}">{{ p }}</a>{% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="?page={{ page+1 }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">🕐</div>
+  <h3>Belum ada rating</h3>
+  <p>Mulai beri rating drama favoritmu untuk melihat riwayat di sini.</p>
+  <a href="{{ url_for('dramas_list') }}" class="btn btn-primary">Jelajahi Drama</a>
+</div>
+{% endif %}
+{% endblock %}

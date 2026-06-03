@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Pencarian{% endblock %}
+{% block page_title %}Perbandingan Metode{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-green">⚖️ Analisis</div>
+  <h1 class="hero-title">Perbandingan CBF vs CF</h1>
+  <p class="hero-desc">Perbandingan hasil rekomendasi dan metrik evaluasi utama (RMSE & MAE) antara Content-Based Filtering dan Collaborative Filtering.</p>
+</div>
+
+<!-- METRIK UTAMA -->
+{% if eval_data %}
+<div style="margin-bottom:14px">
+  <div class="hero-badge badge-blush" style="margin-bottom:8px">📊 Metrik Utama Penelitian</div>
+  <div style="font-family:'Nanum Myeongjo',serif;font-size:20px;font-weight:800;margin-bottom:14px">Perbandingan RMSE & MAE</div>
+</div>
+
+<div class="two-col" style="margin-bottom:8px">
+  {% for r in eval_data %}
+  <div class="card" style="border-top:4px solid {% if r.method=='CBF' %}var(--blush){% else %}var(--gold){% endif %}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="font-size:20px">{{ '🏷️' if r.method=='CBF' else '🤝' }}</div>
+      <div>
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700">Metode {{ r.method }}</div>
+        <div style="font-size:10.5px;color:var(--muted)">K={{ r.k }} · {{ r.created_at[:10] }} · {{ r.n_users_eval or '—' }} user dievaluasi</div>
+      </div>
+    </div>
+    <!-- RMSE & MAE BESAR -->
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div style="flex:1;text-align:center;background:var(--soft);border-radius:10px;padding:14px">
+        <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">RMSE ★ Utama</div>
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:26px;font-weight:800;color:{% if r.method=='CBF' %}var(--blush){% else %}var(--gold-dark){% endif %}">
+          {{ "%.4f"|format(r.rmse) if r.rmse is not none else '—' }}
+        </div>
+        {% if r.rmse is not none %}
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:5px">
+          <div style="height:100%;background:{% if r.method=='CBF' %}var(--blush){% else %}var(--gold){% endif %};width:{{ [100 - (r.rmse / 3 * 100)|int, 0]|max }}%;border-radius:3px"></div>
+        </div>
+        {% endif %}
+      </div>
+      <div style="flex:1;text-align:center;background:var(--soft);border-radius:10px;padding:14px">
+        <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">MAE ★ Utama</div>
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:26px;font-weight:800;color:{% if r.method=='CBF' %}var(--blush){% else %}var(--gold-dark){% endif %}">
+          {{ "%.4f"|format(r.mae) if r.mae is not none else '—' }}
+        </div>
+        {% if r.mae is not none %}
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:5px">
+          <div style="height:100%;background:{% if r.method=='CBF' %}var(--blush){% else %}var(--gold){% endif %};width:{{ [100 - (r.mae / 2 * 100)|int, 0]|max }}%;border-radius:3px"></div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Metrik tambahan kecil -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      {% if r.precision_k is not none %}<span class="tag" style="font-size:10px">P@K: {{ "%.4f"|format(r.precision_k) }}</span>{% endif %}
+      {% if r.recall_k is not none %}<span class="tag" style="font-size:10px">R@K: {{ "%.4f"|format(r.recall_k) }}</span>{% endif %}
+      {% if r.f1_k is not none %}<span class="tag" style="font-size:10px">F1: {{ "%.4f"|format(r.f1_k) }}</span>{% endif %}
+      {% if r.ndcg is not none %}<span class="tag" style="font-size:10px">NDCG: {{ "%.4f"|format(r.ndcg) }}</span>{% endif %}
+      {% if r.coverage is not none %}<span class="tag" style="font-size:10px">Cov: {{ "%.2f"|format(r.coverage) }}</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- KESIMPULAN OTOMATIS -->
+{% if eval_data|length == 2 %}
+{% set cbf = eval_data[0] if eval_data[0].method=='CBF' else eval_data[1] %}
+{% set cf  = eval_data[1] if eval_data[1].method=='CF'  else eval_data[0] %}
+{% if cbf.rmse is not none and cf.rmse is not none %}
+<div class="card" style="margin-bottom:22px;border-left:3px solid var(--green-dark)">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green-dark);margin-bottom:8px">📌 Kesimpulan Otomatis</div>
+  {% if cbf.rmse < cf.rmse and cbf.mae < cf.mae %}
+  <p style="font-size:13px;line-height:1.7">Berdasarkan metrik utama, <strong>CBF lebih unggul</strong> dengan RMSE={{ "%.4f"|format(cbf.rmse) }} dan MAE={{ "%.4f"|format(cbf.mae) }} dibandingkan CF (RMSE={{ "%.4f"|format(cf.rmse) }}, MAE={{ "%.4f"|format(cf.mae) }}).</p>
+  {% elif cf.rmse < cbf.rmse and cf.mae < cbf.mae %}
+  <p style="font-size:13px;line-height:1.7">Berdasarkan metrik utama, <strong>CF lebih unggul</strong> dengan RMSE={{ "%.4f"|format(cf.rmse) }} dan MAE={{ "%.4f"|format(cf.mae) }} dibandingkan CBF (RMSE={{ "%.4f"|format(cbf.rmse) }}, MAE={{ "%.4f"|format(cbf.mae) }}).</p>
+  {% else %}
+  <p style="font-size:13px;line-height:1.7">Hasil menunjukkan <strong>keunggulan berbeda</strong>: CBF unggul di satu metrik sementara CF unggul di metrik lain. Analisis lebih lanjut diperlukan untuk menentukan metode yang lebih optimal secara keseluruhan.</p>
+  {% endif %}
+  <div style="font-size:11px;color:var(--muted);margin-top:6px">* Prinsip evaluasi: Lower is Better. Metode dengan nilai lebih rendah dianggap lebih akurat.</div>
+</div>
+{% endif %}
+{% endif %}
+{% endif %}
+
+<!-- SELECT DRAMA FOR SIDE-BY-SIDE RECS -->
+<div style="font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:700;margin-bottom:12px">
+  Bandingkan Hasil Rekomendasi
+</div>
+
+<div class="card" style="margin-bottom:18px">
+  <form method="get" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+
+    <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px">
+      <label class="form-label">Masukkan drama favorit anda</label>
+
+      <input
+        type="text"
+        name="drama_title"
+        class="form-control"
+        placeholder="Contoh: Squid game"
+        value="{{ drama_title or '' }}">
+    </div>
+
+    <div class="form-group" style="margin-bottom:0;width:100px">
+      <label class="form-label">Jumlah (N)</label>
+
+      <input
+        type="number"
+        name="n"
+        class="form-control"
+        min="5"
+        max="20"
+        value="{{ top_n }}">
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      Tampilkan
+    </button>
+
+  </form>
+</div>
+
+{% if drama %}
+<div style="margin-bottom:16px;padding:12px 16px;background:var(--soft);border-radius:11px;display:flex;gap:12px;align-items:center">
+  <div style="font-size:24px">🎭</div>
+  <div>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700">{{ drama.title }}</div>
+    <div style="font-size:12px;color:var(--muted)">{{ drama.year or '—' }} · {{ drama.genre or '—' }}</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div>
+    <div class="hero-badge badge-blush" style="margin-bottom:10px">🏷️ Content-Based (CBF)</div>
+    {% if not cbf_ready %}<div class="info-box"><span>⚠</span> Model CBF belum ditraining.</div>
+    {% elif recs_cbf %}
+    {% for i, r in recs_cbf|enumerate %}
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
+      <div style="width:20px;text-align:center;font-size:10.5px;color:var(--muted);flex-shrink:0">{{ i+1 }}</div>
+      <div style="flex:1;min-width:0">
+        <a href="{{ url_for('drama_detail', drama_id=r.drama_id) }}" style="font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none">{{ r.title[:36] }}</a>
+        <div class="sim-bar" style="margin:2px 0"><div class="sim-fill" style="width:{{ (r.similarity*100)|int }}%"></div></div>
+      </div>
+      <div style="font-size:10.5px;color:var(--blush);font-weight:700;flex-shrink:0">{{ (r.similarity*100)|int }}%</div>
+    </div>
+    {% endfor %}
+    {% else %}<div class="info-box"><span>ℹ</span> Tidak ada rekomendasi CBF.</div>{% endif %}
+  </div>
+  <div>
+    <div class="hero-badge badge-gold" style="margin-bottom:10px">🤝 Collaborative (CF)</div>
+    {% if not cf_ready %}<div class="info-box"><span>⚠</span> Model CF belum ditraining.</div>
+    {% elif recs_cf %}
+    {% for i, r in recs_cf|enumerate %}
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center">
+      <div style="width:20px;text-align:center;font-size:10.5px;color:var(--muted);flex-shrink:0">{{ i+1 }}</div>
+      <div style="flex:1;min-width:0">
+        <a href="{{ url_for('drama_detail', drama_id=r.drama_id) }}" style="font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none">{{ r.title[:36] }}</a>
+        <div class="sim-bar" style="margin:2px 0"><div class="sim-fill cb" style="width:{{ (r.similarity*100)|int }}%"></div></div>
+      </div>
+      <div style="font-size:10.5px;color:var(--gold-dark);font-weight:700;flex-shrink:0">{{ (r.similarity*100)|int }}%</div>
+    </div>
+    {% endfor %}
+    {% else %}<div class="info-box"><span>ℹ</span> Tidak ada rekomendasi CF.</div>{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

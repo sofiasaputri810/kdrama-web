@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Import Data{% endblock %}
+{% block page_title %}Import Data{% endblock %}
+
+{% block content %}
+<div class="admin-nav">
+  <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+  <a href="{{ url_for('admin_dramas') }}">🎬 Drama</a>
+  <a href="{{ url_for('admin_users') }}">👥 Pengguna</a>
+  <a href="{{ url_for('admin_import') }}" class="active">📥 Import</a>
+  <a href="{{ url_for('admin_retrain') }}">🔁 Retrain</a>
+  <a href="{{ url_for('admin_logs') }}">📋 Log</a>
+</div>
+
+<div style="max-width:620px">
+  <div class="page-hero">
+    <div class="hero-badge badge-gold">📥 Import Dataset</div>
+    <h1 class="hero-title" style="font-size:22px">Import Dataset Gabungan</h1>
+    <p class="hero-desc">Import dari satu file CSV yang berisi data drama sekaligus rating pengguna.</p>
+  </div>
+
+  {% if result %}
+  <div class="card" style="margin-bottom:18px;border-color:{% if result.success %}var(--green-dark){% else %}var(--cherry){% endif %}">
+    {% if result.success %}
+    <div style="color:var(--green-dark);font-weight:700;font-size:14px;margin-bottom:12px">✓ Import Berhasil!</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+      {% for label, val in [('Drama',result.n_dramas),('Users',result.n_users),('Train',result.n_train),('Test',result.n_test)] %}
+      <div style="text-align:center;background:var(--soft);border-radius:9px;padding:12px">
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:22px;font-weight:800;color:var(--blush)">{{ val }}</div>
+        <div style="font-size:11px;color:var(--muted)">{{ label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="font-size:12.5px;color:var(--muted)">
+      Split: <strong>80% train</strong> ({{ result.n_train }}) + <strong>20% test</strong> ({{ result.n_test }}) per user<br>
+      Langkah selanjutnya: <a href="{{ url_for('admin_retrain') }}" style="color:var(--blush)">Training model FA-CBF dan CF →</a>
+    </div>
+    {% else %}
+    <div style="color:var(--cherry);font-weight:700;margin-bottom:6px">✕ Import Gagal</div>
+    <div style="font-size:12.5px;color:var(--muted)">{{ result.error }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- FORMAT INFO -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">📋 Format Dataset Gabungan</div>
+    <div class="info-box" style="margin-bottom:14px">
+      <span>ℹ</span>
+      <div>Letakkan file CSV di folder <code style="background:var(--soft);padding:1px 6px;border-radius:4px;font-size:11px">data/</code> dengan nama <strong>dataset_kdrama.csv</strong></div>
+    </div>
+
+    <!-- Tabel kolom -->
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Kolom yang Diharapkan</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--soft)">
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)">Kolom</th>
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)">Tipe</th>
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)">Keterangan</th>
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)">Wajib</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for col, tipe, ket, wajib in [
+            ('user_id',      'String',  'ID pengguna — mis. user_00001',           True),
+            ('drama_id',     'String',  'ID drama — mis. kdrama_0001',             True),
+            ('rating_x',     'Float',   'Rating dari pengguna (1–10) → data latih/uji', True),
+            ('title',        'String',  'Judul drama',                             True),
+            ('genre',        'String',  'Genre, dipisah koma',                     False),
+            ('rating_y',     'Float',   'Rata-rata rating drama (metadata)',       False),
+            ('synopsis',     'String',  'Sinopsis / deskripsi drama',              False),
+            ('director',     'String',  'Nama sutradara',                          False),
+            ('screenwriter', 'String',  'Nama penulis skenario',                  False),
+            ('cast',         'String',  'Pemeran utama, dipisah koma',            False),
+            ('tags',         'String',  'Tag konten, dipisah koma',               False),
+          ] %}
+          <tr>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:monospace;font-size:11.5px;color:var(--ink)">{{ col }}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted)">{{ tipe }}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted)">{{ ket }}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border)">
+              {% if wajib %}<span class="tag tag-blush" style="font-size:10px">Wajib</span>
+              {% else %}<span class="tag" style="font-size:10px">Opsional</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SPLIT INFO -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">✂️ Pembagian Data Latih / Uji</div>
+    <div style="display:flex;gap:12px;margin-bottom:12px">
+      <div style="flex:1;background:rgba(232,80,106,.06);border:1px solid rgba(232,80,106,.2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:26px;font-weight:800;color:var(--blush)">80%</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Data Latih (Train)</div>
+        <div style="font-size:11px;color:var(--muted)">Digunakan untuk training model FA-CBF dan CF</div>
+      </div>
+      <div style="flex:1;background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:26px;font-weight:800;color:var(--gold-dark)">20%</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Data Uji (Test)</div>
+        <div style="font-size:11px;color:var(--muted)">Digunakan untuk evaluasi RMSE, MAE, Precision@K</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7">
+      <strong>Aturan split per user:</strong> Untuk setiap pengguna dengan minimal 5 rating, 
+      80% rating terlama masuk <em>data latih</em> dan 20% rating terbaru masuk <em>data uji</em>. 
+      Pengguna dengan kurang dari 5 rating, semua masuk data latih.
+    </div>
+  </div>
+
+  <!-- TOMBOL IMPORT -->
+  <div class="card">
+    <form method="post" id="import-form" onsubmit="startImport()">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button type="submit" class="btn btn-primary" id="import-btn">📥 Mulai Import</button>
+        <div id="import-status" style="font-size:12.5px;color:var(--muted)"></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function startImport() {
+  const btn = document.getElementById('import-btn');
+  const status = document.getElementById('import-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Mengimport...';
+  status.textContent = 'Membaca CSV, mengekstrak drama, membagi data latih/uji...';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Profil Saya{% endblock %}
+{% block page_title %}Profil Saya{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="hero-badge badge-blush">👤 Profil</div>
+  <h1 class="hero-title">{{ user.display_name or user.username }}</h1>
+  <p class="hero-desc">Kelola informasi profil dan preferensi genre Anda.</p>
+</div>
+
+<div class="two-col">
+  <!-- PROFILE FORM -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">✏️ Edit Profil</div>
+      <form method="post">
+        <input type="hidden" name="action" value="update_profile">
+
+        <!-- Avatar preview -->
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;padding:14px;background:var(--soft);border-radius:10px">
+          <div id="avatar-preview" style="width:54px;height:54px;border-radius:50%;background:{{ user.avatar_color or '#e8506a' }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;flex-shrink:0">
+            {{ (user.display_name or user.username)[0].upper() }}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:5px">Warna Avatar</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              {% for color in ['#e8506a','#d4a843','#3dba7e','#6b48d6','#e07b2a','#1a9dbc','#d63b3b','#2d6bbf'] %}
+              <div onclick="setColor('{{ color }}')" style="width:22px;height:22px;border-radius:50%;background:{{ color }};cursor:pointer;border:2px solid {% if (user.avatar_color or '#e8506a')==color %}var(--ink){% else %}transparent{% endif %};transition:border .15s" data-color="{{ color }}"></div>
+              {% endfor %}
+            </div>
+          </div>
+          <input type="hidden" name="avatar_color" id="avatar-color" value="{{ user.avatar_color or '#e8506a' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nama Tampil</label>
+          <input type="text" name="display_name" class="form-control" value="{{ user.display_name or '' }}" placeholder="Nama publik Anda">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bio</label>
+          <textarea name="bio" class="form-control" rows="3" placeholder="Ceritakan sedikit tentang diri Anda...">{{ user.bio or '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Genre Favorit</label>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;padding:10px;background:var(--soft);border-radius:9px">
+            {% for g in all_genres %}
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+              <input type="checkbox" name="fav_genres" value="{{ g }}" {% if g in fav_genres %}checked{% endif %} class="genre-cb" style="accent-color:var(--blush)">
+              {{ g }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">💾 Simpan Profil</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- INFO + CHANGE PASSWORD -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">ℹ️ Informasi Akun</div>
+      <table style="width:100%;font-size:12.5px;border-collapse:collapse">
+        <tr><td style="color:var(--muted);padding:5px 0;width:110px">Username</td><td><strong>{{ user.username }}</strong></td></tr>
+        <tr><td style="color:var(--muted);padding:5px 0">Email</td><td>{{ user.email }}</td></tr>
+        <tr><td style="color:var(--muted);padding:5px 0">Bergabung</td><td>{{ user.created_at[:10] }}</td></tr>
+        <tr><td style="color:var(--muted);padding:5px 0">Login Terakhir</td><td>{{ user.last_login[:10] if user.last_login else '—' }}</td></tr>
+        <tr><td style="color:var(--muted);padding:5px 0">Status</td>
+          <td><span class="tag tag-green">Aktif</span></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔒 Ganti Password</div>
+      <form method="post">
+        <input type="hidden" name="action" value="change_password">
+        <div class="form-group">
+          <label class="form-label">Password Lama</label>
+          <input type="password" name="old_password" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password Baru</label>
+          <input type="password" name="new_password" class="form-control" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Konfirmasi Password Baru</label>
+          <input type="password" name="confirm_password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-outline btn-sm">🔒 Ganti Password</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function setColor(c) {
+  document.getElementById('avatar-color').value = c;
+  document.getElementById('avatar-preview').style.background = c;
+  document.querySelectorAll('[data-color]').forEach(el => {
+    el.style.border = el.dataset.color === c ? '2px solid var(--ink)' : '2px solid transparent';
+  });
+}
+</script>
+{% endblock %}

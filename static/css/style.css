@@ -1,0 +1,412 @@
+/* ================================================================
+   KDrama Recommend — Design System
+   ================================================================ */
+:root {
+  --ink:       #1a1018;
+  --paper:     #fdf6f0;
+  --blush:     #e8506a;
+  --cherry:    #c1253e;
+  --gold:      #d4a843;
+  --gold-dark: #b8900e;
+  --soft:      #f2e8e5;
+  --muted:     #8a7b78;
+  --card:      #fff9f7;
+  --border:    #e8d8d4;
+  --green:     #3dba7e;
+  --green-dark:#289e63;
+  --sidebar-w: 252px;
+  --topbar-h:  56px;
+  --radius:    12px;
+  --shadow:    0 4px 20px rgba(26,16,24,.08);
+  --shadow-lg: 0 12px 40px rgba(26,16,24,.14);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink);
+       min-height:100vh; line-height:1.6; }
+
+/* ── SCROLLBAR ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--paper); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ================================================================
+   SIDEBAR
+   ================================================================ */
+.sidebar {
+  position:fixed; left:0; top:0; width:var(--sidebar-w);
+  height:100vh; background:var(--ink); display:flex;
+  flex-direction:column; z-index:200; overflow-y:auto;
+  transition:transform .3s ease;
+}
+.sb-brand { padding:22px 20px 16px; border-bottom:1px solid rgba(255,255,255,.07); }
+.sb-brand a { text-decoration:none; }
+.sb-ko { font-family:'Nanum Myeongjo',serif; font-size:9.5px; color:var(--blush);
+          letter-spacing:3px; text-transform:uppercase; margin-bottom:4px; }
+.sb-name { font-family:'Nanum Myeongjo',serif; font-size:19px; color:#fff;
+           font-weight:800; line-height:1.2; }
+.sb-sub { font-size:8.5px; color:rgba(255,255,255,.2); letter-spacing:1px; margin-top:3px; }
+.sb-nav { padding:10px 0; flex:1; }
+.nav-lbl { font-size:9px; color:rgba(255,255,255,.2); letter-spacing:2px;
+           text-transform:uppercase; padding:0 20px; margin:12px 0 3px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 20px;
+            text-decoration:none; color:rgba(255,255,255,.4);
+            font-family:'DM Sans',sans-serif; font-size:12.5px;
+            transition:all .18s; position:relative; border:none;
+            background:none; width:100%; text-align:left; cursor:pointer; }
+.nav-item:hover { color:#fff; background:rgba(255,255,255,.04); }
+.nav-item.active { color:#fff; background:rgba(232,80,106,.15); font-weight:600; }
+.nav-item.active::before { content:''; position:absolute; left:0; top:0;
+                            width:3px; height:100%; background:var(--blush);
+                            border-radius:0 2px 2px 0; }
+.nav-icon { width:28px; height:28px; border-radius:7px; display:flex;
+            align-items:center; justify-content:center; font-size:13px;
+            flex-shrink:0; background:rgba(255,255,255,.05); }
+.nav-item.active .nav-icon { background:var(--blush); }
+.nav-sub-label { font-size:9.5px; color:rgba(255,255,255,.28); font-weight:400; margin-top:1px; }
+.sb-user { margin:0 12px 8px; background:rgba(255,255,255,.06);
+           border:1px solid rgba(255,255,255,.08); border-radius:10px;
+           padding:10px 12px; display:flex; align-items:center; gap:9px; }
+.sb-avatar { width:32px; height:32px; border-radius:50%; display:flex;
+             align-items:center; justify-content:center; color:#fff;
+             font-size:13px; font-weight:700; flex-shrink:0; }
+.sb-user-info { flex:1; min-width:0; }
+.sb-user-name { font-size:12px; color:#fff; font-weight:600;
+                white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sb-user-role { font-size:9.5px; color:rgba(255,255,255,.35); }
+.sb-logout { color:rgba(255,255,255,.3); font-size:14px; text-decoration:none;
+             padding:4px; border-radius:4px; transition:color .15s; }
+.sb-logout:hover { color:var(--blush); }
+.sb-footer { padding:10px 20px; border-top:1px solid rgba(255,255,255,.06);
+             font-size:9.5px; color:rgba(255,255,255,.14); }
+.sidebar-toggle { display:none; position:fixed; top:14px; left:14px;
+                  z-index:300; background:var(--ink); color:#fff; border:none;
+                  width:38px; height:38px; border-radius:9px; font-size:15px;
+                  cursor:pointer; }
+
+/* ================================================================
+   MAIN LAYOUT
+   ================================================================ */
+.main { margin-left:var(--sidebar-w); min-height:100vh; display:flex; flex-direction:column; }
+.topbar { display:flex; align-items:center; justify-content:space-between;
+          padding:0 28px; height:var(--topbar-h); border-bottom:1px solid var(--border);
+          background:rgba(253,246,240,.96); backdrop-filter:blur(8px);
+          position:sticky; top:0; z-index:100; gap:16px; }
+.topbar-left { flex:1; min-width:0; }
+.page-title { font-family:'Nanum Myeongjo',serif; font-size:16px; font-weight:700;
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.topbar-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.topbar-search { display:flex; align-items:center; gap:7px; background:var(--soft);
+                 border:1px solid var(--border); border-radius:9px;
+                 padding:6px 12px; width:200px; }
+.topbar-search input { border:none; background:none; font-family:'DM Sans',sans-serif;
+                       font-size:12.5px; color:var(--ink); outline:none; width:100%; }
+.topbar-search input::placeholder { color:var(--muted); }
+.topbar-avatar { width:32px; height:32px; border-radius:50%; display:flex;
+                 align-items:center; justify-content:center; color:#fff;
+                 font-size:12px; font-weight:700; cursor:pointer;
+                 text-decoration:none; transition:transform .2s; }
+.topbar-avatar:hover { transform:scale(1.08); }
+.content { padding:24px 28px; flex:1; }
+
+/* ================================================================
+   FLASH MESSAGES
+   ================================================================ */
+.flash-container { padding:0 28px 0; }
+.flash { display:flex; align-items:center; gap:10px; padding:11px 15px;
+         border-radius:10px; margin:8px 0; font-size:13px; font-weight:500;
+         animation:slideDown .25s ease; position:relative; }
+.flash-success { background:#e6f9ef; color:#1a5c38; border:1px solid #b2dfc8; }
+.flash-error   { background:#fef0f0; color:#8b1a1a; border:1px solid #f5c0c0; }
+.flash-warning { background:#fef9e6; color:#7a5c00; border:1px solid #e8d89a; }
+.flash-info    { background:#eef4fe; color:#1a3c6e; border:1px solid #b8d0f7; }
+.flash-close   { margin-left:auto; background:none; border:none; cursor:pointer;
+                 opacity:.5; font-size:12px; padding:2px 4px; transition:opacity .15s; }
+.flash-close:hover { opacity:1; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ================================================================
+   COMPONENTS
+   ================================================================ */
+
+/* Page Hero */
+.page-hero { margin-bottom:22px; }
+.hero-badge { display:inline-flex; align-items:center; gap:5px; border-radius:20px;
+              padding:4px 12px; font-size:10px; font-weight:700; letter-spacing:1.2px;
+              text-transform:uppercase; margin-bottom:8px; border:1px solid; }
+.badge-blush { background:rgba(232,80,106,.09); border-color:rgba(232,80,106,.25); color:var(--blush); }
+.badge-gold  { background:rgba(212,168,67,.1); border-color:rgba(212,168,67,.3); color:var(--gold-dark); }
+.badge-green { background:rgba(61,186,126,.09); border-color:rgba(61,186,126,.25); color:var(--green-dark); }
+.badge-gray  { background:rgba(138,123,120,.09); border-color:rgba(138,123,120,.25); color:var(--muted); }
+.hero-title { font-family:'Nanum Myeongjo',serif; font-size:26px; font-weight:800;
+              line-height:1.2; margin-bottom:6px; }
+.hero-desc { color:var(--muted); font-size:13px; max-width:540px; line-height:1.65; }
+
+/* Card */
+.card { background:var(--card); border:1px solid var(--border);
+        border-radius:var(--radius); padding:20px; }
+.card-title { font-size:13px; font-weight:700; margin-bottom:14px; }
+.card-sm { padding:14px 16px; border-radius:10px; }
+
+/* Buttons */
+.btn { display:inline-flex; align-items:center; gap:6px; padding:9px 20px;
+       border-radius:9px; font-family:'DM Sans',sans-serif; font-size:13px;
+       font-weight:600; cursor:pointer; border:none; text-decoration:none;
+       transition:all .18s; white-space:nowrap; }
+.btn:hover { transform:translateY(-1px); }
+.btn:active { transform:translateY(0); }
+.btn-primary  { background:var(--blush); color:#fff; }
+.btn-primary:hover  { background:var(--cherry); }
+.btn-gold     { background:var(--gold-dark); color:#fff; }
+.btn-gold:hover     { background:#9a7808; }
+.btn-green    { background:var(--green-dark); color:#fff; }
+.btn-green:hover    { background:#1f7a4d; }
+.btn-outline  { background:transparent; color:var(--blush); border:1.5px solid var(--blush); }
+.btn-outline:hover  { background:rgba(232,80,106,.07); }
+.btn-gray     { background:var(--soft); color:var(--muted); border:1px solid var(--border); }
+.btn-gray:hover     { background:var(--border); }
+.btn-danger   { background:transparent; color:var(--cherry); border:1.5px solid var(--cherry); }
+.btn-danger:hover   { background:rgba(193,37,62,.07); }
+.btn-sm { padding:6px 13px; font-size:12px; border-radius:7px; }
+.btn-xs { padding:4px 9px; font-size:11px; border-radius:6px; }
+.btn:disabled { opacity:.5; cursor:not-allowed; transform:none !important; }
+
+/* Forms */
+.form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.form-label { font-size:10.5px; font-weight:700; letter-spacing:.8px;
+              text-transform:uppercase; color:var(--muted); }
+.form-control { padding:9px 12px; border:1.5px solid var(--border); border-radius:9px;
+                background:var(--paper); font-family:'DM Sans',sans-serif;
+                font-size:13px; color:var(--ink); outline:none;
+                transition:border-color .18s; width:100%; }
+.form-control:focus { border-color:var(--blush); }
+.form-control::placeholder { color:var(--muted); }
+textarea.form-control { resize:vertical; min-height:80px; }
+select.form-control { appearance:none; cursor:pointer; }
+.form-hint { font-size:11.5px; color:var(--muted); }
+.form-row { display:flex; gap:12px; flex-wrap:wrap; }
+.form-row .form-group { flex:1; min-width:140px; }
+
+/* Tags / Badges */
+.tag { display:inline-flex; font-size:10px; padding:3px 9px; border-radius:20px;
+       background:var(--soft); color:var(--muted); border:1px solid var(--border); }
+.tag-blush { background:rgba(232,80,106,.1); color:var(--blush); border-color:rgba(232,80,106,.2); }
+.tag-gold  { background:rgba(212,168,67,.1); color:var(--gold-dark); border-color:rgba(212,168,67,.2); }
+.tag-green { background:rgba(61,186,126,.1); color:var(--green-dark); border-color:rgba(61,186,126,.2); }
+
+/* Drama Cards */
+.drama-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(168px,1fr)); gap:14px; }
+.drama-card { background:var(--card); border:1px solid var(--border); border-radius:13px;
+              overflow:hidden; cursor:pointer; transition:all .22s; position:relative;
+              text-decoration:none; color:var(--ink); display:block; }
+.drama-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg);
+                    border-color:var(--blush); }
+.drama-poster { width:100%; aspect-ratio:2/3; display:flex; align-items:center;
+                justify-content:center; flex-direction:column; gap:6px; font-size:32px;
+                background:linear-gradient(160deg,#1a1a2e,#555); position:relative; }
+.drama-poster-label { font-size:9px; color:rgba(255,255,255,.5); text-align:center;
+                      padding:0 8px; font-family:'DM Sans',sans-serif; line-height:1.4; }
+.drama-rating-badge { position:absolute; top:8px; right:8px; background:rgba(0,0,0,.55);
+                      color:#fff; font-size:10px; font-weight:800; padding:3px 7px;
+                      border-radius:20px; backdrop-filter:blur(4px); }
+.drama-body { padding:10px 12px; }
+.drama-title { font-family:'Nanum Myeongjo',serif; font-size:12.5px; font-weight:700;
+               line-height:1.3; margin-bottom:3px; }
+.drama-meta  { font-size:10.5px; color:var(--muted); margin-bottom:5px; }
+.drama-tags  { display:flex; flex-wrap:wrap; gap:3px; }
+
+/* Star Rating */
+.star-rating { display:flex; gap:2px; }
+.star { color:var(--gold); font-size:11px; }
+.star-empty { color:var(--border); }
+
+/* Stats Grid */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:13px; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:13px;
+             padding:18px; text-align:center; }
+.stat-val { font-family:'Nanum Myeongjo',serif; font-size:30px; font-weight:800;
+            line-height:1; margin-bottom:4px; }
+.stat-lbl { font-size:11px; color:var(--muted); }
+
+/* Table */
+.table-wrap { background:var(--card); border:1px solid var(--border);
+              border-radius:var(--radius); overflow:hidden; }
+.table-wrap table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.table-wrap thead { background:var(--soft); }
+.table-wrap th { padding:11px 14px; text-align:left; font-size:10px; font-weight:700;
+                 text-transform:uppercase; letter-spacing:.8px; color:var(--muted);
+                 border-bottom:1px solid var(--border); white-space:nowrap; }
+.table-wrap td { padding:11px 14px; border-bottom:1px solid var(--border);
+                 vertical-align:middle; }
+.table-wrap tr:last-child td { border-bottom:none; }
+.table-wrap tr:hover td { background:var(--soft); transition:background .15s; }
+
+/* Pagination */
+.pagination { display:flex; align-items:center; gap:5px; justify-content:center;
+              padding:20px 0; }
+.pagination a, .pagination span {
+  padding:6px 11px; border-radius:7px; font-size:12.5px; font-weight:500;
+  text-decoration:none; color:var(--muted); border:1px solid var(--border);
+  background:var(--card); transition:all .15s; }
+.pagination a:hover { border-color:var(--blush); color:var(--blush); }
+.pagination .current { background:var(--blush); color:#fff; border-color:var(--blush); }
+.pagination .disabled { opacity:.35; cursor:not-allowed; pointer-events:none; }
+
+/* Rating Input */
+.rating-stars { display:flex; gap:4px; flex-direction:row-reverse; justify-content:flex-end; }
+.rating-stars input { display:none; }
+.rating-stars label { font-size:26px; color:var(--border); cursor:pointer;
+                      transition:color .15s; }
+.rating-stars label:hover, .rating-stars label:hover ~ label,
+.rating-stars input:checked ~ label { color:var(--gold); }
+
+/* Two column */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+/* Similarity bar */
+.sim-bar { background:var(--soft); border-radius:4px; height:5px; overflow:hidden; margin:4px 0; }
+.sim-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--blush),var(--gold)); }
+.sim-fill.cb { background:linear-gradient(90deg,var(--gold),#e8c466); }
+
+/* Empty state */
+.empty-state { text-align:center; padding:48px 20px; color:var(--muted); }
+.empty-icon { font-size:42px; margin-bottom:12px; }
+.empty-state h3 { font-family:'Nanum Myeongjo',serif; font-size:17px; color:var(--ink);
+                  margin-bottom:6px; }
+.empty-state p { font-size:13px; line-height:1.65; max-width:360px; margin:0 auto 16px; }
+
+/* Info box */
+.info-box { background:linear-gradient(135deg,rgba(232,80,106,.04),rgba(212,168,67,.03));
+            border:1px solid var(--border); border-radius:11px; padding:12px 16px;
+            margin-bottom:18px; font-size:12.5px; color:var(--muted);
+            line-height:1.65; display:flex; gap:10px; align-items:flex-start; }
+
+/* Spinner */
+.spinner { width:16px; height:16px; border:2.5px solid rgba(255,255,255,.3);
+           border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+.spinner-dark { border-color:rgba(0,0,0,.15); border-top-color:var(--blush); }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Watchlist heart */
+.wl-btn { background:none; border:none; cursor:pointer; font-size:18px;
+          transition:transform .2s; display:inline-flex; }
+.wl-btn:hover { transform:scale(1.2); }
+.wl-btn.active { color:var(--blush); }
+
+/* Admin sidebar highlight */
+.admin-badge { display:inline-flex; align-items:center; gap:4px; font-size:9.5px;
+               font-weight:700; padding:2px 8px; border-radius:20px; color:#fff;
+               background:var(--blush); }
+
+/* Genre filter pills */
+.genre-pills { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:18px; }
+.genre-pill { padding:5px 14px; border-radius:20px; font-size:12px; font-weight:500;
+              text-decoration:none; color:var(--muted); border:1px solid var(--border);
+              background:var(--card); transition:all .15s; cursor:pointer; }
+.genre-pill:hover, .genre-pill.active { background:var(--blush); color:#fff;
+                                         border-color:var(--blush); }
+
+/* Bar chart */
+.bar-chart { display:flex; flex-direction:column; gap:10px; }
+.bar-row { display:flex; align-items:center; gap:10px; }
+.bar-lbl { width:110px; font-size:11px; text-align:right; flex-shrink:0; }
+.bar-track { flex:1; background:var(--soft); border-radius:4px; height:20px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; display:flex; align-items:center;
+            padding-left:7px; font-size:10.5px; font-weight:700; color:#fff;
+            white-space:nowrap; transition:width .8s cubic-bezier(.4,0,.2,1); }
+.barf-cf { background:linear-gradient(90deg,var(--blush),#f07b90); }
+.barf-cb { background:linear-gradient(90deg,var(--gold),#e8c466); }
+
+/* ================================================================
+   PAGE-SPECIFIC
+   ================================================================ */
+/* Index hero */
+.index-hero { background:linear-gradient(135deg,var(--ink) 0%,#2d1a2e 100%);
+              border-radius:18px; padding:40px 36px; margin-bottom:28px;
+              position:relative; overflow:hidden; }
+.index-hero::before { content:'드라마'; font-family:'Nanum Myeongjo',serif;
+                       font-size:120px; font-weight:800; color:rgba(255,255,255,.03);
+                       position:absolute; right:-10px; bottom:-20px; line-height:1; }
+.index-hero h1 { font-family:'Nanum Myeongjo',serif; font-size:32px; font-weight:800;
+                 color:#fff; line-height:1.2; margin-bottom:10px; }
+.index-hero p { color:rgba(255,255,255,.55); font-size:13.5px; max-width:480px;
+                line-height:1.7; margin-bottom:22px; }
+.index-stats { display:flex; gap:24px; }
+.index-stat { color:rgba(255,255,255,.7); font-size:12.5px; }
+.index-stat strong { display:block; font-family:'Nanum Myeongjo',serif;
+                     font-size:22px; color:#fff; }
+
+/* Drama detail */
+.drama-detail-header { display:flex; gap:24px; margin-bottom:28px; align-items:flex-start; }
+.drama-detail-poster { width:160px; flex-shrink:0; aspect-ratio:2/3;
+                       border-radius:13px; overflow:hidden;
+                       display:flex; align-items:center; justify-content:center;
+                       font-size:48px; }
+.drama-detail-info { flex:1; }
+.drama-detail-title { font-family:'Nanum Myeongjo',serif; font-size:28px;
+                      font-weight:800; line-height:1.2; margin-bottom:8px; }
+.drama-detail-meta { font-size:13px; color:var(--muted); margin-bottom:12px; display:flex; gap:16px; flex-wrap:wrap; }
+.detail-meta-item { display:flex; align-items:center; gap:5px; }
+
+/* Rating distribution */
+.rating-dist { display:flex; flex-direction:column; gap:6px; }
+.dist-row { display:flex; align-items:center; gap:8px; font-size:11.5px; }
+.dist-lbl { width:24px; text-align:right; color:var(--muted); }
+.dist-bar { flex:1; background:var(--soft); border-radius:3px; height:14px; overflow:hidden; }
+.dist-fill { height:100%; background:var(--gold); border-radius:3px;
+             transition:width .6s ease; }
+.dist-cnt { width:28px; color:var(--muted); font-size:10.5px; }
+
+/* Auth pages */
+.auth-page { min-height:100vh; display:flex; align-items:center;
+             justify-content:center; padding:20px; background:var(--paper); }
+.auth-card { background:var(--card); border:1px solid var(--border);
+             border-radius:18px; padding:36px; width:100%; max-width:420px;
+             box-shadow:var(--shadow-lg); }
+.auth-logo { text-align:center; margin-bottom:28px; }
+.auth-logo-ko { font-size:10px; color:var(--blush); letter-spacing:3px;
+                text-transform:uppercase; font-family:'Nanum Myeongjo',serif; }
+.auth-logo-name { font-family:'Nanum Myeongjo',serif; font-size:22px;
+                  font-weight:800; color:var(--ink); }
+.auth-title { font-family:'Nanum Myeongjo',serif; font-size:20px;
+              font-weight:700; margin-bottom:4px; }
+.auth-sub { font-size:13px; color:var(--muted); margin-bottom:22px; }
+.auth-divider { display:flex; align-items:center; gap:12px; margin:18px 0;
+                font-size:12px; color:var(--muted); }
+.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* Admin */
+.admin-nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
+.admin-nav a { padding:7px 15px; border-radius:8px; font-size:12.5px; font-weight:500;
+               text-decoration:none; color:var(--muted); border:1px solid var(--border);
+               background:var(--card); transition:all .15s; }
+.admin-nav a:hover, .admin-nav a.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(26,16,24,.6); z-index:500;
+                 display:none; align-items:center; justify-content:center;
+                 padding:20px; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:18px;
+         padding:26px; max-width:500px; width:100%; animation:fadeUp .25s ease;
+         position:relative; max-height:90vh; overflow-y:auto; }
+.modal-close { position:absolute; top:14px; right:14px; background:none; border:none;
+               font-size:16px; cursor:pointer; color:var(--muted); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* Responsive */
+@media (max-width:768px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .sidebar-toggle { display:flex; align-items:center; justify-content:center; }
+  .two-col, .three-col { grid-template-columns:1fr; }
+  .drama-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
+  .index-hero { padding:24px 20px; }
+  .index-hero h1 { font-size:24px; }
+  .index-stats { flex-wrap:wrap; gap:14px; }
+  .drama-detail-header { flex-direction:column; }
+  .drama-detail-poster { width:100%; max-width:200px; }
+}

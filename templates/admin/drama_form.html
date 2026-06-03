@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Drama{% endblock %}
+{% block page_title %}{{ action }} Drama{% endblock %}
+
+{% block content %}
+<div class="admin-nav">
+  <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+  <a href="{{ url_for('admin_dramas') }}" class="active">🎬 Drama</a>
+  <a href="{{ url_for('admin_users') }}">👥 Pengguna</a>
+  <a href="{{ url_for('admin_import') }}">📥 Import</a>
+  <a href="{{ url_for('admin_retrain') }}">🔁 Retrain</a>
+  <a href="{{ url_for('admin_logs') }}">📋 Log</a>
+</div>
+
+<div style="max-width:700px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+    <a href="{{ url_for('admin_dramas') }}" class="btn btn-gray btn-sm">← Kembali</a>
+    <div style="font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:700">{{ action }} Drama</div>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      <div class="form-group">
+        <label class="form-label">Judul <span style="color:var(--blush)">*</span></label>
+        <input type="text" name="title" class="form-control" value="{{ drama.title if drama else '' }}" required placeholder="Judul drama...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Genre</label>
+          <input type="text" name="genre" class="form-control" value="{{ drama.genre if drama else '' }}" placeholder="Romance, Fantasy, ...">
+          <div class="form-hint">Pisahkan dengan koma</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tahun</label>
+          <input type="number" name="year" class="form-control" value="{{ drama.year if drama else '' }}" min="1990" max="2030" placeholder="2024">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Episode</label>
+          <input type="number" name="episodes" class="form-control" value="{{ drama.episodes if drama else '' }}" min="1" placeholder="16">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sinopsis</label>
+        <textarea name="synopsis" class="form-control" rows="4" placeholder="Deskripsi singkat drama...">{{ drama.synopsis if drama else '' }}</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Sutradara</label>
+          <input type="text" name="director" class="form-control" value="{{ drama.director if drama else '' }}" placeholder="Nama sutradara">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Penulis Skenario</label>
+          <input type="text" name="screenwriter" class="form-control" value="{{ drama.screenwriter if drama else '' }}" placeholder="Nama penulis">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pemeran (Cast)</label>
+        <input type="text" name="cast" class="form-control" value="{{ drama.cast if drama else '' }}" placeholder="Aktor1, Aktor2, Aktris1, ...">
+        <div class="form-hint">Pisahkan dengan koma</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags</label>
+        <input type="text" name="tags" class="form-control" value="{{ drama.tags if drama else '' }}" placeholder="First Love, Time Travel, Office Romance, ...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rating Rata-rata (opsional)</label>
+        <input type="number" name="rating_avg" class="form-control" value="{{ drama.rating_avg if drama else '' }}" step="0.1" min="0" max="10" placeholder="7.5">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="submit" class="btn btn-primary">💾 Simpan</button>
+        <a href="{{ url_for('admin_dramas') }}" class="btn btn-gray">Batal</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
