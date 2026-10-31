@@ -5,6 +5,11 @@ Analisis Perbandingan Kinerja Metode Collaborative Filtering dan
 Feature Augmented Content-Based Filtering untuk Sistem Rekomendasi Drama Korea
 
 ---
+## Preview
+![Halaman Beranda](images/Screenshot1.png)
+*Gambar 1: Antarmuka Halaman Beranda Sistem Rekomendasi KDrama.*
+![Halaman Rekomendasi](images/Screenshot2.png)
+*Gambar 2: Antarmuka Halaman Rekomendasi Personal dengan opsi metode CBF dan CF.*
 
 ## Instalasi
 
@@ -46,11 +51,6 @@ python setup.py
 # 3. Jalankan server
 python run.py
 ```
-
-Buka: http://localhost:5000  
-Admin: admin / admin123
-
----
 
 ## Pembagian Data Latih / Uji
 
